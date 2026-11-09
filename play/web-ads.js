@@ -1,4 +1,4 @@
-// Web ads for Worldwalk: Google H5 Games Ads (Ad Placement API).
+// Web ads for Exolander: Google H5 Games Ads (Ad Placement API).
 // Rewarded ads and ad breaks, plugged into the game's window.WWAds hook.
 (function () {
   var S = window.WW_SITE || {};

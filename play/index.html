@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <link rel="canonical" href="https://exolander.space/play/">
-<meta name="description" content="Play Worldwalk free in your browser: land on real planets and survive their gravity, heat and air.">
+<meta name="description" content="Play Exolander free in your browser: land on real planets and survive their gravity, heat and air.">
 <link rel="icon" href="../assets/icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Worldwalk</title>
+<title>Exolander</title>
 <style>
 :root{--ink:#f4efe6;--panel:rgba(8,12,18,.72);--acc:#ffb347;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html,body{height:100%;margin:0;background:#05080c;color:var(--ink);font-family:"Gill Sans","Trebuchet MS",sans-serif;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
@@ -108,7 +108,7 @@ h1{margin:0;font-size:38px;letter-spacing:-.5px}
 <div id="info" class="ovl hide"><div class="lo-in wide"><div id="infH"><b id="infT"></b><button class="btn sm" id="infX">Close</button></div><p id="infS"></p><p id="infA"></p><div id="infG"></div><div id="infL"></div><p id="infN"></p></div></div>
 <div id="done" class="ovl hide"><div class="lo-in"><h2 id="dnT"></h2><div id="dnB"></div><div class="lo-b"><button class="btn" id="dnX">Continue</button></div></div></div>
 <div id="menu">
-<h1 id="ti">Worldwalk</h1>
+<h1 id="ti">Exolander</h1>
 <p id="msg">Land on a real world and feel what its gravity, heat and air do to you.</p>
 <button class="btn" id="resume" hidden>Resume</button>
 <div id="list"></div>
@@ -596,7 +596,7 @@ function exOk(d){if(hasPass())return true;return isFeat(d)?d.ly<=range():false}
 function price(){return(window.WWStore&&WWStore.price)||'$3.99'}
 function nAll(){return ALL.length.toLocaleString('en-US')}
 var PASS_TXT='Unlock '+nAll()+' real exoplanets from the NASA archive: every confirmed world small enough to walk on, from lava planets to frozen worlds 25,000 light-years away. One-time purchase, and it also removes ad breaks.';
-function grantPass(){var first=!SV.pass;SV.pass=1;save();refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList();if(first)showT('Explorer Pass unlocked','All '+nAll()+' exoplanets are open and ad breaks are gone. Thank you for supporting Worldwalk!')}
+function grantPass(){var first=!SV.pass;SV.pass=1;save();refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList();if(first)showT('Explorer Pass unlocked','All '+nAll()+' exoplanets are open and ad breaks are gone. Thank you for supporting Exolander!')}
 window.WWgrantPass=grantPass;window.WWrefresh=function(){refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList()};
 function buyPass(after){if(hasPass()&&SV.pass){showT('You have the Explorer Pass','All '+nAll()+' exoplanets are unlocked.');return}
 if(!window.WWStore&&(window.WWnative||window.WWsite)){showT('Explorer Pass','Coming soon. Meanwhile, watch a short ad to try any planet once.');return}

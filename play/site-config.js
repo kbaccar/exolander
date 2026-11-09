@@ -1,5 +1,5 @@
 // ============================================================
-//  Worldwalk website settings: the only file you need to edit.
+//  Exolander website settings: the only file you need to edit.
 // ============================================================
 window.WWsite = true; // marks the public website build (hides the developer sandbox)
 window.WW_SITE = {
