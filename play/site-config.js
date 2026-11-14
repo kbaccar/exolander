@@ -5,7 +5,7 @@ window.WWsite = true; // marks the public website build (hides the developer san
 window.WW_SITE = {
   // --- Ads: Google AdSense "H5 Games Ads" ---
   // Your AdSense publisher ID, e.g. 'ca-pub-1234567890123456'. Leave '' to run without ads.
-  adsenseClient: '',
+  adsenseClient: 'ca-pub-2366707334842855',
   // true = Google test ads (use while testing). Set to false once AdSense approved your site for H5 games.
   adTest: true,
 
