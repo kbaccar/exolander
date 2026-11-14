@@ -33,7 +33,7 @@ if(!D){fetch('search.json').then(function(x){return x.json()}).then(function(d){
 var h=D.filter(function(x){return x[0].toLowerCase().indexOf(v)>-1}).slice(0,40);
 r.innerHTML=h.length?h.map(function(x){return '<li><a href="'+x[1]+'.html">'+x[0].replace(/[<&]/g,'')+'</a></li>'}).join(''):'<li class="mut">No walkable planet with that name.</li>'}})()</script>
 <footer><div class="wrap"><div class="links"><a href="../index.html">Home</a><a href="../play/">Play</a><a href="../planets/index.html">All planets</a>
-<a href="../privacy.html">Privacy</a><a href="../terms.html">Terms</a><a href="../legal.html">Legal notice</a></div>
+<a href="../privacy.html">Privacy</a><a href="../terms.html">Terms</a><a href="../legal.html">Legal notice</a><a href="mailto:karim.baccar9@hotmail.com">Contact</a></div>
 <div>Planet data: <a href="https://exoplanetarchive.ipac.caltech.edu/">NASA Exoplanet Archive</a> and NASA. Exolander is an independent game and is not endorsed by NASA.
 Exoplanet surfaces and air are imagined from the data. © 2026 Karim Baccar</div></div></footer>
 </body></html>
