@@ -730,7 +730,8 @@ else{var sm=summit(sx,sz,60,300);L.push(ex({ty:'beacon',t:'Plant a beacon on the
  if(a==='lava'&&wl>-1e8)L.push(ex({ty:'sample',t:'Sample the lava lake',d:'Lava radiates fierce heat. Get in and out fast.',r:8},shore(sx,sz,wl,1.2)));
  else if(a==='ocean')L.push(ex({ty:'sample',t:'Collect a water sample at the shore',d:'Press X at the marker.',r:10},shore(sx,sz,wl,.3)));
  else L.push(ex({ty:'sample',t:a==='ice'?'Sample ice from a crevasse floor':'Collect a rock sample from the lowest valley',d:'Press X at the marker.',r:10},basin(sx,sz,wl)));
- if(a==='crater'||a==='ice')L.push({ty:'drop',t:'Drop the hammer and feather',d:'Press E. How does the air (or lack of it) change the fall?'});else{var jh=4.5*4.5/2/cur.g;L.push({ty:'jump',t:'Jump higher than '+(Math.floor(jh*8)/10)+' m',d:'Gravity here is '+(cur.g/9.81).toFixed(2)+' g.',val:Math.floor(jh*8)/10})}}
+ if(typeof XT!=='undefined'&&XT.life(cur))L.push({ty:'scan',t:'Scan a life form',d:'Life here is imagined. Get close to something living and press X (Use).'});
+ else if(a==='crater'||a==='ice')L.push({ty:'drop',t:'Drop the hammer and feather',d:'Press E. How does the air (or lack of it) change the fall?'});else{var jh=4.5*4.5/2/cur.g;L.push({ty:'jump',t:'Jump higher than '+(Math.floor(jh*8)/10)+' m',d:'Gravity here is '+(cur.g/9.81).toFixed(2)+' g.',val:Math.floor(jh*8)/10})}}
 return L}
 function onLoad(k){var key=k==='ex'?'ex:'+cur.n:k;st.key=key;st.done=false;st.revUsed=false;st.o2Used=false;st.slots=3;AD.land++;st.maxJ=0;st.gy=st.peak=Y.y;st.onPrev=true;st.t0=0;st.o2=100;st.jet=6;OB.forEach(function(o){sc.remove(o.m)});OB=[];BC.forEach(function(b){sc.remove(b)});BC=[];clearMk();drop0=null;
 cur.rad=radLvl(cur);if(!cur.sat){lander.position.set(Y.x-6,H(Y.x-6,Y.z+4)-.1,Y.z+4);lander.visible=true}else lander.visible=false;
@@ -762,7 +763,7 @@ if(r<.005)msg='No air: they hit the ground together, just as astronaut David Sco
 var hd='Hammer: '+ta.toFixed(2)+' s · Feather: '+tb.toFixed(2)+' s',dm=st.mis.filter(function(m){return m.ty==='drop'&&!m.ok})[0];if(dm)complete(dm,hd+'. '+msg);else showT(hd,msg)}}
 /* ---------- use: beacon / sample ---------- */
 var bcM=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:.5}),bcL=new THREE.MeshBasicMaterial({color:0xff4040});
-function use(){if(!cur||paused||cur.sat)return;var near=null,nd=1e9;st.mis.forEach(function(m){if(m.ok||m.x===undefined||(m.ty!=='beacon'&&m.ty!=='sample'))return;var d=Math.hypot(Y.x-m.x,Y.z-m.z);if(d<nd){nd=d;near=m}});
+function use(){if(!cur||paused||cur.sat)return;if(XT.scan())return;var near=null,nd=1e9;st.mis.forEach(function(m){if(m.ok||m.x===undefined||(m.ty!=='beacon'&&m.ty!=='sample'))return;var d=Math.hypot(Y.x-m.x,Y.z-m.z);if(d<nd){nd=d;near=m}});
 if(near&&nd<=near.r){if(near.minY!==undefined&&Y.y<near.minY){showT('Not high enough','Climb higher to reach the marked spot.');return}if(near.ty==='beacon'){var b=new THREE.Group(),pl=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,2.2,6),bcM);pl.position.y=1.1;var lt=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),bcL);lt.position.y=2.25;b.add(pl,lt);b.userData.lt=lt;b.position.set(Y.x,Y.y,Y.z);b.traverse(function(o){o.castShadow=true});sc.add(b);BC.push(b);au.beep(880,.15);complete(near,'Beacon transmitting')}else{au.beep(660,.12);complete(near,'Sample stored')}return}
 if(near)showT('Too far','The nearest '+(near.ty==='beacon'?'beacon site':'sample site')+' is '+Math.round(nd)+' m away. Follow the light beam.');else showT('Nothing to use here','Beacons and samples go at the marked sites.')}
 /* ---------- movement hooks ---------- */
@@ -1096,7 +1097,7 @@ function key(){return st.key||''}
 function rec(){var k=key();return SV.rec[k]=SV.rec[k]||{}}
 var ACH=[['first','🚀','First steps','Land on any world'],['apollo','🪶','Apollo 15','Drop the hammer and feather on the Moon'],['venus','🔥','Pressure cooker','Survive 90 seconds on Venus'],['jump','🦘','Sky high','Jump higher than 10 m'],['mars','🥾','Long walk','Walk 1 km on Mars'],
 ['s3','🧭','Surveyor','Complete 3 surveys'],['s10','🏅','Veteran surveyor','Complete 10 surveys'],['w5','🌍','Tourist','Land on 5 different worlds'],['hz','🌱','Goldilocks','Land on 3 worlds in a habitable zone'],['lava','🌋','Fire walker','Land on a lava world'],
-['ocean','🌊','Water world','Land on an ocean world'],['far','🔭','Deep space','Land on a world more than 1,000 light-years away'],['close','💓','Close call','Finish a survey with your suit below 10%'],['daily','📅','Daily explorer','Complete the planet of the day 3 days in a row']];
+['ocean','🌊','Water world','Land on an ocean world'],['far','🔭','Deep space','Land on a world more than 1,000 light-years away'],['close','💓','Close call','Finish a survey with your suit below 10%'],['daily','📅','Daily explorer','Complete the planet of the day 3 days in a row'],['life','🧫','First contact','Scan a life form (imagined)']];
 function unlock(id){if(SV.ach[id])return;SV.ach[id]=today();save();var a=ACH.filter(function(x){return x[0]===id})[0];if(!a)return;var b=$x('achb'),ov=[].some.call(D.querySelectorAll('.ovl'),function(o){return !o.classList.contains('hide')});b.style.top=ov?'calc(10px + env(safe-area-inset-top,0px))':'auto';b.style.bottom=ov?'auto':'';b.innerHTML='Milestone · <b>'+a[2]+'</b> · '+a[3];b.classList.add('on');au.chime();clearTimeout(b._t);b._t=setTimeout(function(){b.classList.remove('on')},4200)}
 function achList(){$x('achL').innerHTML=ACH.map(function(a){var on=SV.ach[a[0]];return'<div class="a'+(on?'':' no')+'"><i>'+(on?'✓':'—')+'</i><span><b>'+a[2]+'</b><small>'+a[3]+(on?' · '+on:'')+'</small></span></div>'}).join('');$x('ach').classList.remove('hide')}
 function daily(){var L=CUR.filter(function(d){return d.a!=='gas'});return L[dayN()%L.length]}
@@ -1149,15 +1150,65 @@ function menuHook(){var L=$x('list');if(!L)return;var h=$x('hero');if(!h){h=D.cr
  if(b=$x('hDay'))b.onclick=function(){var d=daily();gate(function(){setEx(d)})};if(b=$x('hAch'))b.onclick=achList;if(b=$x('hPass'))b.onclick=function(){buyPass()};
  [].forEach.call(L.children,function(bt){var k=bt.dataset&&bt.dataset.k;if(!k)return;var smx=bt.querySelector('small'),st2=stars(k);if(st2&&smx&&smx.textContent.indexOf('/3 ')<0)smx.textContent=st2+' · '+smx.textContent})}
 
+
+/* ---------- imagined life on habitable worlds ---------- */
+var LF=null,LIFEI={
+ mat:['Microbial mat','Layered films of single-celled life growing where water meets rock. Mats like these built the oldest fossils on Earth, 3.5 billion years old.'],
+ strom:['Stromatolite','A mound built up layer by layer by microbial mats in shallow water. Earth\'s stromatolites changed our planet\'s air by making oxygen.'],
+ veg:['Vegetation','Plants tuned to their star. Under a red dwarf\'s dim red light, leaves might evolve to be near-black or purple to absorb as much light as possible.'],
+ float:['Floater','A gas-filled drifter riding the dense air and filtering airborne microbes. A creature like this has never been observed anywhere.'],
+ graze:['Grazer','A small six-legged grazer feeding on microbial mats. A creature like this has never been observed anywhere.']};
+function lifeOf(w){if(!w||!w.src||!w.ts||w.sat)return null;var a=w.ts.a,p=w.ts.p,T=w.t,pr=w.p||0;
+ if(a==='rocky'&&p==='temperate')return{veg:1,mat:1,strom:w.wl!==undefined,graze:1,float:pr>.6,plank:w.wl!==undefined};
+ if(a==='ocean'&&p!=='steam')return{veg:p!=='hycean',mat:1,strom:1,graze:p!=='hycean',float:pr>.3,plank:1};
+ if(a==='rocky'&&p==='frost'&&T>-45)return{mat:1};return null}
+function lifeClear(){if(LF){LF.items.forEach(function(o){sc.remove(o)});LF=null}}
+function spot(cx,cz,R,ok,r){for(var i=0;i<40;i++){var a=r()*6.283,d=Math.sqrt(r())*R,x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d,h=H(x,z);if(ok(h,x,z))return[x,z,h]}return null}
+function vegCol(ts){var t=ts||5000;return t<3300?[0x1a1220,0x2a1430,0x241a2e]:t<4200?[0x2a1418,0x3a1e1a,0x40281c]:t<5300?[0x4a3a1a,0x3a4a1e,0x5a4a22]:[0x2e5a24,0x3a6a2a,0x24481c]}
+function lifeSpawn(){lifeClear();var L=lifeOf(cur);if(!L)return;var r=mb(hh(cur.n)+5),wl=cur.wl===undefined?-1e9:cur.wl,hasW=wl>-1e8,cx=Y.x,cz=Y.z,items=[],ents=[],m4=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),v=new THREE.Vector3(),sc3=new THREE.Vector3(),col=new THREE.Color();
+ function inst(geo,mat,n,place){var im=new THREE.InstancedMesh(geo,mat,n),k=0;for(var i=0;i<n*3&&k<n;i++){var pz=place(i);if(!pz)continue;m4.compose(v.set(pz.x,pz.y,pz.z),q.setFromEuler(e.set(pz.rx||0,pz.ry||0,0)),sc3.set(pz.s[0],pz.s[1],pz.s[2]));im.setMatrixAt(k,m4);if(pz.c!==undefined)im.setColorAt(k,col.setHex(pz.c));k++;ents.push({x:pz.x,z:pz.z,k:pz.kind})}im.count=k;im.instanceMatrix.needsUpdate=true;if(im.instanceColor)im.instanceColor.needsUpdate=true;im.frustumCulled=false;sc.add(im);items.push(im);return im}
+ var y0=function(x,z){return H(x,z)-WT.drop(x,z)};
+ var near=hasW?shore(cx,cz,wl,.4,260):{x:cx+40,z:cz+30},cl={x:near.x,z:near.z};
+ if(L.mat){var MC=[0x6a4026,0x3e4a24,0x4a2a3e,0x5a4a2a];inst(new THREE.CircleGeometry(1.4,9).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({roughness:1,transparent:true,opacity:.7,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3}),160,function(){var p=spot(cl.x,cl.z,110,function(h){return hasW?Math.abs(h-wl)<1.4:true},r);if(!p)return null;var s=.35+r()*1.1;return{x:p[0],y:Math.max(p[2],wl)-WT.drop(p[0],p[1])+.04,z:p[1],ry:r()*6,s:[s,1,s*(.6+r()*.6)],c:MC[Math.floor(r()*MC.length)],kind:'mat'}})}
+ if(L.strom&&hasW)inst(new THREE.SphereGeometry(1,10,6,0,6.283,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0x8a7a62,roughness:1}),70,function(){var p=spot(cl.x,cl.z,120,function(h){return h>wl-1.3&&h<wl+.3},r);if(!p)return null;var s=.5+r()*1.1;return{x:p[0],y:p[2]-WT.drop(p[0],p[1])-.1,z:p[1],ry:r()*6,s:[s,s*(.5+r()*.6),s],kind:'strom'}});
+ if(L.veg){var VC=vegCol(cur.src.ts);var vm=new THREE.MeshStandardMaterial({roughness:.95,flatShading:true});
+  inst(new THREE.ConeGeometry(.35,1,5),vm,700,function(){var p=spot(cx,cz,170,function(h){return h>wl+.6},r);if(!p)return null;var s=.5+r()*1.4;return{x:p[0],y:p[2]-WT.drop(p[0],p[1])+s*.45,z:p[1],ry:r()*6,s:[s,s*(.8+r()*.9),s],c:VC[Math.floor(r()*3)],kind:'veg'}});
+  inst(new THREE.CylinderGeometry(.75,.9,.14,7),vm,420,function(){var p=spot(cx,cz,170,function(h){return h>wl+.4},r);if(!p)return null;var s=.5+r()*1.3;return{x:p[0],y:p[2]-WT.drop(p[0],p[1])+.05,z:p[1],ry:r()*6,s:[s,1,s],c:VC[Math.floor(r()*3)],kind:'veg'}})}
+ var anim=[];
+ if(L.plank&&hasW){var PN=500,pp=new Float32Array(PN*3),pg=new THREE.BufferGeometry();for(var i=0;i<PN;i++){var p=spot(cl.x,cl.z,90,function(h){return h<wl-.3},r)||[cl.x,cl.z];pp[i*3]=p[0];pp[i*3+1]=wl+.06;pp[i*3+2]=p[1]}
+  pg.setAttribute('position',new THREE.BufferAttribute(pp,3));var pm=new THREE.PointsMaterial({map:dotT(),size:.35,color:0x59e0ff,transparent:true,opacity:.7,depthWrite:false,blending:THREE.AdditiveBlending});var pk=new THREE.Points(pg,pm);pk.frustumCulled=false;sc.add(pk);items.push(pk);anim.push({ty:'plank',m:pm})}
+ if(L.float){var fm=new THREE.MeshStandardMaterial({color:0xbfe6ff,emissive:0x2a6a8a,emissiveIntensity:.6,transparent:true,opacity:.55,roughness:.3,side:THREE.DoubleSide,depthWrite:false}),tg=new THREE.BufferGeometry(),tp=[];
+  for(var j=0;j<8;j++){var aa=j/8*6.283;tp.push(Math.cos(aa)*.7,0,Math.sin(aa)*.7,Math.cos(aa)*.5,-2.6-(j%3)*.5,Math.sin(aa)*.5)}tg.setAttribute('position',new THREE.Float32BufferAttribute(tp,3));var tl=new THREE.LineBasicMaterial({color:0xa8d8ff,transparent:true,opacity:.55});
+  for(i=0;i<7;i++){var p2=spot(cl.x,cl.z,160,function(){return true},r);if(!p2)continue;var g=new THREE.Group(),dome=new THREE.Mesh(new THREE.SphereGeometry(1,14,8,0,6.283,0,Math.PI/2),fm),ten=new THREE.LineSegments(tg,tl);g.add(dome,ten);var S=1.2+r()*1.8;g.scale.setScalar(S);
+   var fy=Math.max(H(p2[0],p2[1]),wl)+6+r()*16;g.position.set(p2[0],fy,p2[1]);sc.add(g);items.push(g);anim.push({ty:'float',g:g,bx:p2[0],bz:p2[1],by:fy,ph:r()*6.283,sp:.04+r()*.05,R:20+r()*30});ents.push({x:p2[0],z:p2[1],k:'float',g:g})}}
+ if(L.graze){var bm=new THREE.MeshStandardMaterial({color:0x6a5040,roughness:.8,flatShading:true}),hm=new THREE.MeshStandardMaterial({color:0x4a382c,roughness:.8,flatShading:true}),GN=6,legs=new THREE.InstancedMesh(new THREE.CylinderGeometry(.04,.05,.6,4).translate(0,-.3,0),hm,GN*6);legs.frustumCulled=false;sc.add(legs);items.push(legs);var gs=[];
+  for(i=0;i<GN;i++){var p3=spot(cl.x+30,cl.z+30,50,function(h){return h>wl+.6},r);if(!p3)continue;var g2=new THREE.Group(),body=new THREE.Mesh(new THREE.SphereGeometry(1,10,7),bm);body.scale.set(.75,.38,.42);var head=new THREE.Mesh(new THREE.SphereGeometry(.2,8,6),hm);head.position.set(.78,.12,0);g2.add(body,head);
+   g2.position.set(p3[0],p3[2],p3[1]);sc.add(g2);items.push(g2);var gz={ty:'graze',g:g2,x:p3[0],z:p3[1],a:r()*6.283,ph:r()*6,i:i,v:0};gs.push(gz);anim.push(gz);ents.push({k:'graze',g:g2})}
+  anim.push({ty:'legs',m:legs,gs:gs})}
+ LF={items:items,ents:ents,anim:anim,t:0,L:L,cl:cl};
+ var sm2=st.mis.filter(function(x){return x.ty==='scan'})[0];if(sm2){sm2.x=cl.x;sm2.z=cl.z;sm2.r=40;addMk(sm2);renderMis()}
+ setTimeout(function(){showT('Biosignatures detected','This world could hold life. What you will see here is imagined from what astrobiologists think is possible.')},1600)}
+var lm4=new THREE.Matrix4(),lq=new THREE.Quaternion(),le=new THREE.Euler(),lv=new THREE.Vector3(),ls=new THREE.Vector3(1,1,1);
+function lifeTick(dt){if(!LF)return;LF.t+=dt;var t=LF.t;LF.anim.forEach(function(a){
+ if(a.ty==='plank')a.m.opacity=.45+.3*Math.sin(t*1.3);
+ else if(a.ty==='float'){var g=a.g,an=a.ph+t*a.sp;g.position.set(a.bx+Math.cos(an)*a.R,a.by+Math.sin(t*.6+a.ph)*1.2,a.bz+Math.sin(an)*a.R);var pu=1+.08*Math.sin(t*2.2+a.ph);g.children[0].scale.set(1/pu,pu,1/pu)}
+ else if(a.ty==='graze'){var dx=a.x-Y.x,dz=a.z-Y.z,dd=Math.hypot(dx,dz),flee=dd<9;if(flee)a.a=Math.atan2(dz,dx);else if(Math.random()<dt*.3)a.a+=(Math.random()-.5)*2;
+  var sp=flee?3.2:(Math.sin(t*.5+a.ph)>.3?.7:0);a.v=sp;a.x+=Math.cos(a.a)*sp*dt;a.z+=Math.sin(a.a)*sp*dt;var gy=H(a.x,a.z);var wl=cur.wl===undefined?-1e9:cur.wl;if(gy<wl+.3){a.a+=Math.PI;a.x-=Math.cos(a.a)*sp*dt*2;a.z-=Math.sin(a.a)*sp*dt*2;gy=H(a.x,a.z)}
+  a.g.position.set(a.x,gy-WT.drop(a.x,a.z)+.62+(sp?Math.abs(Math.sin(t*sp*5))*.05:0),a.z);a.g.rotation.y=-a.a;a.g.children[1].position.y=.12+(sp?0:Math.sin(t*3+a.ph)*.08-.1)}
+ else if(a.ty==='legs'){a.gs.forEach(function(g,gi){for(var k=0;k<6;k++){var side=k<3?1:-1,fx=(k%3-1)*.42,sw=g.v?Math.sin(t*g.v*6+k*2.1)*.5:0;lv.set(fx,-.12,side*.3);lv.applyAxisAngle(new THREE.Vector3(0,1,0),-g.a);lv.add(g.g.position);
+  le.set(sw*side,-g.a,side*.25);lq.setFromEuler(le);lm4.compose(lv,lq,ls);a.m.setMatrixAt(gi*6+k,lm4)}});a.m.count=a.gs.length*6;a.m.instanceMatrix.needsUpdate=true}})}
+function scan(){if(!LF)return false;var best=null,bd=1e9;LF.ents.forEach(function(en){var x=en.g?en.g.position.x:en.x,z=en.g?en.g.position.z:en.z,y=en.g?en.g.position.y:Y.y,d=Math.hypot(x-Y.x,z-Y.z)+(en.k==='float'?Math.max(0,Math.abs(y-Y.y)-6):0);if(d<bd){bd=d;best=en}});
+ var R0=best&&best.k==='float'?10:best&&best.k==='graze'?6:4.5;if(!best||bd>R0)return false;var inf=LIFEI[best.k];au.beep(990,.1);hap('light');
+ unlock('life');var m=st.mis.filter(function(x){return x.ty==='scan'&&!x.ok})[0];if(m){complete(m,'Life form scanned');setTimeout(function(){showT('Scan: '+inf[0]+' · imagined',inf[1])},2200)}else showT('Scan: '+inf[0]+' · imagined',inf[1]);return true}
 /* ---------- hooks called by the game ---------- */
 function landed(){SV.lands++;var n=cur.n;SV.seen[n]=1;save();RES=null;visorOff();crk=-1;cracks(0);fpClear();for(var i=0;i<DN;i++){dL[i]=0;dP[i*3+1]=-1e5}
  var pc=cur.ts&&WT.PAL[cur.ts.p]?WT.PAL[cur.ts.p][0]:'#9a8a78';dM.color.set(pc).lerp(new THREE.Color(0xaaaaaa),.25);GL.set(specOf(cur));$x('hs').textContent=Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g';$x('o2ad').textContent=hasPass()?'+2 min O₂':'+2 min O₂ · Explorer Pass';st.dist=0;st.px=Y.x;st.pz=Y.z;st.minHp=100;
- volcanic(!!(cur.ts&&cur.ts.a==='lava'));
+ volcanic(!!(cur.ts&&cur.ts.a==='lava'));lifeSpawn();
  unlock('first');if(Object.keys(SV.seen).length>=5)unlock('w5');var s=cur.src;
  if(s){if(s.a==='lava')unlock('lava');if(s.a==='ocean')unlock('ocean');if(s.ly>1000)unlock('far');if(s.t>=180&&s.t<=320&&s.r<2.5){SV.hzs=SV.hzs||{};SV.hzs[n]=1;save();if(Object.keys(SV.hzs).length>=3)unlock('hz')}}
  tips()}
 function lo(){if(quick||SV.lands<=1){quick=false;setTimeout(function(){if(!$x('lo').classList.contains('hide'))$x('loL').click()},30)}}
-function tick(dt,c,h,r){if(!cur)return;visor(c,h);dustTick(dt);volTick(dt);tipTick(dt);st.minHp=Math.min(st.minHp||100,Y.hp);
+function tick(dt,c,h,r){if(!cur)return;visor(c,h);dustTick(dt);volTick(dt);lifeTick(dt);tipTick(dt);st.minHp=Math.min(st.minHp||100,Y.hp);
  if(Y.on&&!cur.sat&&!Y.intro){var d=Math.hypot(Y.x-st.px,Y.z-st.pz);if(d<20){st.dist+=d;if(cur.n==='Mars'){SV.mw=(SV.mw||0)+d;if(SV.mw>=1000)unlock('mars')}}st.px=Y.x;st.pz=Y.z}
  if(st.maxJ>10)unlock('jump')}
 function obj(m){var k=key(),R0=rec(),n=st.mis.filter(function(x){return x.ok}).length;R0.stars=Math.max(R0.stars||0,Math.min(3,n));save();
@@ -1172,9 +1223,9 @@ function fin(){var k=key(),R0=rec(),t=st.t0,fast=!R0.fast||t<R0.fast;if(fast)R0.
  var x=D.createElement('div');x.className='rc';x.innerHTML='OBJECTIVES 3/3 · TIME <b>'+ft+'</b>'+(fast?' · NEW BEST':' · BEST '+Math.round(R0.fast)+' S')+(isD?'<br>PLANET OF THE DAY · STREAK <b>'+SV.daily.streak+' D</b>':'');$x('dnB').appendChild(x);
  var sb=D.createElement('button');sb.className='btn shr';sb.style.cssText='width:100%;margin-top:6px';sb.textContent='Share result';sb.onclick=share;$x('dnB').appendChild(sb)}
 setTimeout(function(){menuHook()},0);
-window.WWxt=function(){return{GL:GL,spec:specOf,fin:fin,ach:achList,card:card}};window.WWdbg=function(){return{pr:R.getPixelRatio(),fp:FP.count,wm:wat.material.type+' '+!!wat.material.map+' vis'+wat.visible+' wl'+cur.wl,x:Y.x,y:Y.y,z:Y.z,on:Y.on,paused:paused,intro:Y.intro,hp:Y.hp,keys:JSON.stringify(keys),menu:$x('menu').className,cur:cur&&cur.n,st:{t0:st.t0,maxJ:st.maxJ}}};
+window.WWxt=function(){return{GL:GL,spec:specOf,fin:fin,ach:achList,card:card,lf:function(){return LF&&{n:LF.ents.length,cl:LF.cl,kinds:LF.ents.reduce(function(o,e){o[e.k]=(o[e.k]||0)+1;return o},{}),g:LF.ents.filter(function(e){return e.k==='graze'}).map(function(e){return[e.g.position.x,e.g.position.z]})}},tp:function(x,z,yaw){Y.x=x;Y.z=z;Y.y=H(x,z)+.5;Y.vy=0;if(yaw!==undefined)Y.yaw=yaw}}};window.WWdbg=function(){return{pr:R.getPixelRatio(),fp:FP.count,wm:wat.material.type+' '+!!wat.material.map+' vis'+wat.visible+' wl'+cur.wl,x:Y.x,y:Y.y,z:Y.z,on:Y.on,paused:paused,intro:Y.intro,hp:Y.hp,keys:JSON.stringify(keys),menu:$x('menu').className,cur:cur&&cur.n,st:{t0:st.t0,maxJ:st.maxJ}}};
 function ms(){var m=$x('ms');if(!m)return;var first=m.querySelector('.mi:not(.ok)');if(first)first.classList.add('cur')}
-return{isDaily:function(d){return !!d&&d.n===daily().n},descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
+return{life:lifeOf,scan:scan,isDaily:function(d){return !!d&&d.n===daily().n},descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
 /*END XT*/
 return{worldOk:worldOk,pause:pause,trial:trial,gate:gate,hasPass:hasPass,buyPass:buyPass,locked:locked,price:price,ads:AD,pick:pick,exOk:exOk,refresh:refresh,onLoad:onLoad,tick:tick,cam:camFx,spd:spd,vacc:vacc,satDesc:satDesc,quiet:quiet,get paused(){return paused},range:range,_st:st,_land:lander}})();
 /* ---------- deep link: ?planet=<slug> (used by the website's planet pages) ---------- */
