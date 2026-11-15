@@ -805,14 +805,14 @@ g.fillStyle='rgba(244,239,230,.75)';g.fillText('hammer · feather',dx-10,gy+18)}
 cmpRAF=requestAnimationFrame(cmpDraw)}
 $('cmpX').onclick=function(){$('cmp').classList.add('hide');cancelAnimationFrame(cmpRAF);pause(false)};
 refresh();
-return{pause:pause,trial:trial,gate:gate,hasPass:hasPass,buyPass:buyPass,locked:locked,price:price,ads:AD,pick:pick,exOk:exOk,refresh:refresh,onLoad:onLoad,tick:tick,cam:camFx,spd:spd,vacc:vacc,satDesc:satDesc,quiet:quiet,get paused(){return paused},range:range,_st:st,_land:lander}})();
+return{worldOk:worldOk,pause:pause,trial:trial,gate:gate,hasPass:hasPass,buyPass:buyPass,locked:locked,price:price,ads:AD,pick:pick,exOk:exOk,refresh:refresh,onLoad:onLoad,tick:tick,cam:camFx,spd:spd,vacc:vacc,satDesc:satDesc,quiet:quiet,get paused(){return paused},range:range,_st:st,_land:lander}})();
 /* ---------- deep link: ?planet=<slug> (used by the website's planet pages) ---------- */
 function wwSlug(n){return String(n).toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/['’`]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
 window.wwSlug=wwSlug;
 // a visitor arriving from a planet page gets one free landing on a locked planet per day
 function dlFree(){var t=new Date().toISOString().slice(0,10);try{if(localStorage.getItem('ww-dl-day')===t)return false;localStorage.setItem('ww-dl-day',t)}catch(e){}return true}
 (function(){var m=/[?&]planet=([^&#]+)/.exec(location.search);if(!m)return;var want=decodeURIComponent(m[1]).toLowerCase(),go=null,nm=null;
-for(var k in P){if(k!=='ex'&&P[k]&&P[k].n&&wwSlug(P[k].n)===want){(function(k){nm=P[k].n;go=function(){GM.pick(k)}})(k);break}}
+for(var k in P){if(k!=='ex'&&P[k]&&P[k].n&&wwSlug(P[k].n)===want){(function(k){nm=P[k].n;go=function(){if(!GM.worldOk(k)&&dlFree())load(k);else GM.pick(k)}})(k);break}}
 if(!go)for(var i=0;i<ALL.length;i++){if(wwSlug(ALL[i][0])===want){(function(e){var d=FEAT[e[0]]||null;nm=e[0];go=function(){var w=d||cWorld(e);if(!GM.exOk(w)&&!dlFree()){GM.locked(w,function(){setEx(w)});return}setEx(w)}})(ALL[i]);break}}
 if(!go&&typeof FEAT!=='undefined')for(var f in FEAT){if(wwSlug(f)===want){(function(d){nm=d.n;go=function(){if(!GM.exOk(d)&&!dlFree()){GM.locked(d,function(){setEx(d)});return}setEx(d)}})(FEAT[f]);break}}
 if(!go)return;var L0=document.getElementById('list'),b=document.createElement('button');b.className='btn';b.id='deepb';b.textContent='▶ Land on '+nm;b.onclick=function(){b.remove();go()};L0.insertBefore(b,L0.firstChild);
