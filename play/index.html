@@ -1218,34 +1218,92 @@ function scan(){if(!LF)return false;var best=null,bd=1e9;LF.ents.forEach(functio
 
 /* ---------- field survey: measure the world with instruments ---------- */
 var TOOLS=[['temp','Thermometer',3],['pres','Barometer',2],['air','Spectrometer',4],['rad','Dosimeter',5]],TM=null,airT=0;
-D.body.insertAdjacentHTML('beforeend','<div id="tools"></div><div id="meas"><b id="msT"></b><div class="mb"><i id="msF"></i></div><small id="msS"></small></div>');
+D.body.insertAdjacentHTML('beforeend','<div id="tools"></div><div id="meas"><div class="mh"><b id="msT"></b><span id="msM"></span></div><canvas id="msC"></canvas><div class="kp" id="msK"></div><div class="mb"><i id="msF"></i></div><small id="msS"></small></div>');
 var tcss=D.createElement('style');tcss.textContent=['#tools{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));display:none;gap:6px;z-index:2}',
 '#tools button{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.62);color:#f2f2f2;border:1px solid #3a3a3a;border-radius:2px;padding:8px 10px;cursor:pointer;pointer-events:auto}#tools button.ok{border-color:#9be3ae;color:#9be3ae}#tools button.on{border-color:#fff;background:rgba(255,255,255,.12)}#tools button i{font-style:normal;opacity:.55;margin-right:5px}',
-'#meas{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:3;display:none;background:rgba(0,0,0,.8);border:1px solid #f2f2f2;border-radius:2px;padding:12px 16px;min-width:240px;text-align:center}#meas b{display:block;font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}#meas .mb{height:3px;background:#333;margin:10px 0 6px}#meas .mb i{display:block;height:100%;width:0;background:#f2f2f2}#meas small{font:400 11px var(--mono);color:#9a9a9a}',
+'#meas{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:3;display:none;background:rgba(0,0,0,.84);border:1px solid #f2f2f2;border-radius:2px;padding:10px 12px 9px;width:min(340px,88vw);text-align:left}',
+'#meas .mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px solid #3a3a3a;padding-bottom:6px;margin-bottom:6px}#meas b{font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}#meas .mh span{font:400 10px var(--mono);color:#8a8a8a;letter-spacing:.04em;text-transform:uppercase}',
+'#meas canvas{display:block;width:100%;height:118px;background:#050505;border:1px solid #222}#meas .kp{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:8px}#meas .kp div{font:400 10px var(--mono);color:#8a8a8a;text-transform:uppercase;letter-spacing:.04em;line-height:1.25}#meas .kp div b{display:block;font:500 15px var(--mono);color:#fff;letter-spacing:0;text-transform:none}',
+'#meas .mb{height:2px;background:#333;margin:8px 0 5px}#meas .mb i{display:block;height:100%;width:0;background:#f2f2f2}#meas small{font:400 10px var(--mono);color:#9a9a9a;letter-spacing:.04em;text-transform:uppercase}#meas.done{border-color:#9be3ae}#meas.done .mb i{background:#9be3ae}',
 '@media (max-height:520px){#tools{bottom:auto;top:calc(8px + env(safe-area-inset-top,0px))}#tools button{padding:6px 8px;font-size:10px}#tools button span{display:none}#tools button i{opacity:1;margin:0}}',
 '@media (orientation:portrait) and (max-width:600px){#tools{bottom:auto;top:calc(96px + env(safe-area-inset-top,0px));left:8px;transform:none;flex-wrap:wrap;max-width:62vw}#tools button span{display:none}#tools button i{opacity:1;margin:0}#tools button:after{content:attr(data-s)}}'].join('');D.head.appendChild(tcss);
 function nextTool(){for(var i=0;i<TOOLS.length;i++){var m=mis(TOOLS[i][0]);if(m&&!m.ok)return i}return -1}
-var meab=null;if(TOUCH){meab=D.createElement('button');meab.className='btn sm';meab.id='meab';var ac=$x('acts');ac.insertBefore(meab,ac.firstChild);meab.addEventListener('touchstart',function(e){e.stopPropagation()},{passive:true});meab.onclick=function(e){e.stopPropagation();var i=TM?TM.i:nextTool();if(i<0){showT('All readings taken','Collect the sample and return to the lander.');return}tool(i)}}
-function toolsUI(){if(meab){var n=TM?TM.i:nextTool();meab.textContent=n<0?'Readings ✓':TM?'Cancel':'Measure: '+TOOLS[n][1].slice(0,7)}var t=$x('tools');t.innerHTML=TOOLS.map(function(x,i){var m=mis(x[0]);return'<button data-s=" '+x[1].slice(0,5)+'" data-i="'+i+'" class="'+(m&&m.ok?'ok':'')+(TM&&TM.i===i?' on':'')+'"><i>'+(i+1)+'</i><span>'+x[1]+'</span></button>'}).join('');
+var meab=null;if(TOUCH){meab=D.createElement('button');meab.className='btn sm';meab.id='meab';var ac=$x('acts');ac.insertBefore(meab,ac.firstChild);meab.addEventListener('touchstart',function(e){e.stopPropagation()},{passive:true});meab.onclick=function(e){e.stopPropagation();var i=TM&&!TM.hold&&TM.i>=0?TM.i:nextTool();if(i<0){showT('All readings taken','Collect the sample and return to the lander.');return}tool(i)}}
+function toolsUI(){if(meab){var n=TM&&!TM.hold&&TM.i>=0?TM.i:nextTool();meab.textContent=n<0?'Readings ✓':TM&&!TM.hold&&TM.i>=0?'Cancel':'Measure: '+TOOLS[n][1].slice(0,7)}var t=$x('tools');t.innerHTML=TOOLS.map(function(x,i){var m=mis(x[0]);return'<button data-s=" '+x[1].slice(0,5)+'" data-i="'+i+'" class="'+(m&&m.ok?'ok':'')+(TM&&TM.i===i?' on':'')+'"><i>'+(i+1)+'</i><span>'+x[1]+'</span></button>'}).join('');
  [].forEach.call(t.children,function(b){b.onclick=function(e){e.stopPropagation();tool(+b.dataset.i)}})}
 function mis(ty){return st.mis&&st.mis.filter(function(m){return m.ty===ty})[0]}
+/* ----- instrument screens: live readouts that settle on the real value ----- */
+var MW={'H₂O':18,'CO₂':44,'SO₂':64,'CH₄':16,'CO':28,'N₂':28,'O₂':32,'H₂':2,'He':4,'Ar':40,'Na':23,'K':39,'SiO':44};
+var BANDS={'H₂O':[[.94,.03,.35],[1.14,.04,.4],[1.38,.06,.7],[1.87,.08,.8],[2.7,.15,.9]],'CO₂':[[1.6,.03,.3],[2.0,.05,.5],[2.7,.08,.6],[4.3,.12,1]],'CH₄':[[1.66,.04,.5],[2.3,.08,.6],[3.3,.12,.9]],
+ 'CO':[[2.35,.04,.5],[4.65,.1,.8]],'O₂':[[.76,.012,.7],[1.27,.02,.3]],'SO₂':[[4.0,.1,.7]],'H₂':[[2.4,.25,.35]],'Na':[[.589,.006,.9]],'K':[[.767,.006,.8]],'SiO':[[4.05,.15,.6]]};
+function gasMix(gs){var out=[],t=String(gs||''),guess=/guess|hint|possibly/.test(t);if(/rock vapor/.test(t))return{g:[['Na',.5],['K',.2],['SiO',.3]],guess:true};
+ var re=/(H₂O|CO₂|SO₂|CH₄|CO|N₂|O₂|H₂|He|Ar)(?:[^,]*?([\d.]+)%)?/g,m,seen={};while((m=re.exec(t))){if(seen[m[1]])continue;seen[m[1]]=1;out.push([m[1],m[2]?parseFloat(m[2])/100:null])}
+ var known=out.reduce(function(a,x){return a+(x[1]||0)},0),un=out.filter(function(x){return x[1]===null}),W=[.62,.28,.1];un.forEach(function(x,i){x[1]=(1-known)*(W[i]||.05)/(un.length>3?1.2:1)});return{g:out,guess:guess}}
+function doseOf(){var c=cur,n=c.n;if(n==='Earth')return[.0066,'measured'];if(n==='Moon')return[1.37,'Chang\'e 4, 2020'];if(n==='Mars')return[.67,'Curiosity RAD'];if(n==='Venus'||n==='Titan')return[.01,'estimated: thick air shields'];if(n==='Mercury')return[2.5,'estimated'];
+ var l=c.rad||0;return[[.012,1.1,35][l],'estimated']}
+function boilC(pa){if(pa<611.657)return null;return 1/(1/373.15-8.314*Math.log(pa/101325)/40660)-273.15}
+function setupTool(T){var c=cur,ty=T[0],tg={};
+ if(ty==='temp'){tg.v=nz(c.t+273.15,.008)-273.15;tg.start=21}
+ if(ty==='pres'){tg.p=c.p<1e-6?c.p:nz(c.p,.015)}
+ if(ty==='air'){var gm=gasMix(c.gas);tg.mix=c.p<1e-6?[]:gm.g;tg.guess=gm.guess;tg.mu=tg.mix.reduce(function(a,x){return a+x[1]*(MW[x[0]]||28)},0)/Math.max(1e-6,tg.mix.reduce(function(a,x){return a+x[1]},0))}
+ if(ty==='rad'){var d=doseOf();tg.d=nz(d[0],.05);tg.src=d[1];tg.cpm=tg.d*1000/24*150;tg.hist=[]}
+ return tg}
+var MSC=null;function msCtx(){var c=$x('msC');if(!MSC||c.width!==Math.round(c.clientWidth*DPR)){c.width=Math.round(c.clientWidth*DPR)||600;c.height=Math.round(118*DPR);MSC=c.getContext('2d')}return MSC}
+function kp(list){$x('msK').innerHTML=list.map(function(k){return'<div>'+k[0]+'<b>'+k[1]+'</b></div>'}).join('')}
+function grid(g,W,H){g.fillStyle='#050505';g.fillRect(0,0,W,H);g.strokeStyle='#1c1c1c';g.lineWidth=1;for(var i=1;i<6;i++){g.beginPath();g.moveTo(W*i/6,0);g.lineTo(W*i/6,H);g.stroke()}for(i=1;i<4;i++){g.beginPath();g.moveTo(0,H*i/4);g.lineTo(W,H*i/4);g.stroke()}}
+function fmtT(v){return(v>=0?'+':'')+v.toFixed(1)}
+function drawTool(T,tm,p,done){var g=msCtx(),W=g.canvas.width,H=g.canvas.height,ty=T[0],tg=tm.tg,s2=DPR,F=function(sz){return(10*s2*sz/10)+'px "DM Mono",monospace'};grid(g,W,H);g.font=F(10);
+ if(ty==='temp'){var k=1-Math.exp(-4.2*p),jit=(1-p)*(1-p)*1.8*(Math.random()-.5),v=tg.start+(tg.v-tg.start)*k+jit;tm.h=tm.h||[];tm.h.push(v);if(tm.h.length>140)tm.h.shift();
+  var lo=Math.min(tg.v,tg.start)-10,hi=Math.max(tg.v,tg.start)+10;g.strokeStyle='#fc3d21';g.setLineDash([4*s2,4*s2]);var yt=H-(tg.v-lo)/(hi-lo)*H;if(done){g.beginPath();g.moveTo(0,yt);g.lineTo(W*.78,yt);g.stroke()}g.setLineDash([]);
+  g.strokeStyle='#f2f2f2';g.lineWidth=1.6*s2;g.beginPath();tm.h.forEach(function(x,i){var X=i/139*W*.78,Yv=H-(x-lo)/(hi-lo)*H;i?g.lineTo(X,Yv):g.moveTo(X,Yv)});g.stroke();
+  var bx=W*.86,bw=W*.06;g.strokeStyle='#666';g.lineWidth=1;g.strokeRect(bx,6*s2,bw,H-12*s2);var fh=Math.max(2,(v-lo)/(hi-lo)*(H-12*s2));g.fillStyle=v>60?'#ff7a3a':v<-40?'#7fb2ff':'#e8e8e8';g.fillRect(bx+2,H-6*s2-fh,bw-4,fh);
+  g.fillStyle='#8a8a8a';g.fillText(Math.round(hi)+'°',bx-30*s2,12*s2);g.fillText(Math.round(lo)+'°',bx-30*s2,H-4*s2);
+  kp([['Temperature',v.toFixed(1)+' °C'],['Kelvin',(v+273.15).toFixed(1)+' K'],['vs Earth mean (15 °C)',fmtT(v-15)+' °C'],['Sensor',done?'stable ±0.2 K':'settling '+Math.round(k*100)+'%']]);tm.out=v}
+ else if(ty==='pres'){var P=tg.p,e=1-Math.exp(-5*p)*Math.cos(9*p),PL=function(x){return Math.max(0,Math.min(1,(Math.log10(Math.max(x,1e-9))+9)/11))},a0=Math.PI*1.15,a1=-Math.PI*.15,cx=W*.32,cy=H*.86,R2=H*.72;
+  var tv=PL(P)*e+PL(1e-9)*(1-e),ang=a0+(a1-a0)*tv;g.strokeStyle='#3a3a3a';g.lineWidth=2*s2;g.beginPath();g.arc(cx,cy,R2,-a0,-a1);g.stroke();
+  [[1e-9,'1nbar'],[1e-6,'µbar'],[1e-3,'mbar'],[1,'1 bar'],[100,'100']].forEach(function(t){var aa=a0+(a1-a0)*PL(t[0]);g.strokeStyle='#888';g.beginPath();g.moveTo(cx+Math.cos(aa)*R2*.88,cy-Math.sin(aa)*R2*.88);g.lineTo(cx+Math.cos(aa)*R2,cy-Math.sin(aa)*R2);g.stroke();g.fillStyle='#777';g.font=F(8);g.fillText(t[1],cx+Math.cos(aa)*R2*1.08-12*s2,cy-Math.sin(aa)*R2*1.08)});
+  var ae=a0+(a1-a0)*PL(1);g.strokeStyle='#1d7a3a';g.lineWidth=3*s2;g.beginPath();g.arc(cx,cy,R2*.96,-ae-.04,-ae+.04);g.stroke();
+  g.strokeStyle='#fc3d21';g.lineWidth=2*s2;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(ang)*R2*.9,cy-Math.sin(ang)*R2*.9);g.stroke();g.fillStyle='#f2f2f2';g.beginPath();g.arc(cx,cy,3*s2,0,7);g.fill();
+  var Pn=done?P:Math.pow(10,tv*11-9),pa=Pn*1e5,b=boilC(pa),rh=rho();g.fillStyle='#8a8a8a';g.font=F(9);g.fillText('LOG SCALE',W-62*s2,14*s2);g.fillStyle='#1d7a3a';g.fillText('■ EARTH',W-62*s2,26*s2);
+  kp([['Pressure',fmtP(Pn)],['Pascal',pa<1?pa.toExponential(1)+' Pa':pa<1e4?Math.round(pa)+' Pa':(pa/1000).toFixed(1)+' kPa'],['Water boils at',b===null?'no liquid water':'≈'+Math.round(b)+' °C'],['Air density',P<1e-6?'≈0 kg/m³':(done?rh:rh*e).toFixed(rh<.1?4:2)+' kg/m³']]);tm.out=Pn}
+ else if(ty==='air'){var x0=.5,x1=5,mix=tg.mix,depth=Math.min(1,p*1.6);g.strokeStyle='#2a2a2a';g.fillStyle='#777';g.font=F(8);[.5,1,2,3,4,5].forEach(function(u){var X=(u-x0)/(x1-x0)*W;g.fillText(u+'µm',X+2,H-3*s2)});
+  g.strokeStyle='#f2f2f2';g.lineWidth=1.3*s2;g.beginPath();var tot=Math.max(.32,Math.min(1.1,.42+.22*Math.log10(cur.p+1e-3)));for(var i=0;i<=200;i++){var u=x0+(x1-x0)*i/200,T2=1;mix.forEach(function(m){(BANDS[m[0]]||[]).forEach(function(bd){T2-=depth*bd[2]*Math.min(1,m[1]*2.2+.15)*tot*Math.exp(-Math.pow((u-bd[0])/bd[1],2))})});
+   T2+=(1-p)*(1-p)*.12*(Math.random()-.5)+.015*(Math.random()-.5);var X=i/200*W,Yv=H*.08+(1-Math.max(0,Math.min(1,T2)))*H*.78;i?g.lineTo(X,Yv):g.moveTo(X,Yv)}g.stroke();
+  var shown=[];mix.forEach(function(m,mi){if(p>.25+mi*.15&&BANDS[m[0]]){var bd=BANDS[m[0]].slice().sort(function(a,b){return b[2]-a[2]})[0],X=(bd[0]-x0)/(x1-x0)*W;g.fillStyle='#fc3d21';g.fillText(m[0],Math.min(W-30*s2,X-8*s2),H*.08+H*.82-4*s2);shown.push(m)}});
+  if(!mix.length){g.fillStyle='#8a8a8a';g.font=F(10);g.fillText('NO ABSORPTION LINES · VACUUM',W*.18,H*.5)}
+  var rows2=mix.slice(0,3).map(function(m){var det=p>.25+mix.indexOf(m)*.15||done;return[m[0]+(BANDS[m[0]]?'':' (no IR band)'),det?(m[1]*100<1?(m[1]*100).toFixed(1):Math.round(m[1]*100))+'%'+(tg.guess?' est.':''):'…']});
+  while(rows2.length<3)rows2.push(['—','']);kp(rows2.concat([['Mean molecular mass',mix.length?(p>.6||done?tg.mu.toFixed(1)+' g/mol':'…'):'—']]));tm.out=1}
+ else if(ty==='rad'){var rate=tg.cpm/60,dtc=.1;tm.acc=(tm.acc||0)+(tm.lastdt||0);while(tm.acc>dtc){tm.acc-=dtc;var lam=rate*dtc,n=0,L=Math.exp(-Math.min(lam,30)),pr=1,k2=0;if(lam>30)n=Math.max(0,Math.round(lam+Math.sqrt(lam)*(Math.random()*2-1)*1.2));else{do{k2++;pr*=Math.random()}while(pr>L);n=k2-1}
+   tg.hist.push(n);if(tg.hist.length>60)tg.hist.shift();tm.cnt=(tm.cnt||0)+n;if(n>0&&au.beep&&tg.cpm<4000&&Math.random()<.6)au.beep(1800+Math.random()*400,.012)}
+  var mx2=Math.max(3,Math.max.apply(null,tg.hist)*1.2),bw2=W/60;g.fillStyle='#e8e8e8';tg.hist.forEach(function(n,i){var hh2=n/mx2*(H-14*s2);g.fillRect(i*bw2+1,H-hh2,bw2-2,hh2)});g.fillStyle='#777';g.font=F(8);g.fillText('COUNTS / 0.1 s',4*s2,11*s2);
+  var el=Math.max(.2,tm.t),cpm=(tm.cnt||0)/el*60,usv=cpm/150,mday=usv*24/1000;kp([['Count rate',Math.round(cpm).toLocaleString('en-US')+' CPM'],['Dose rate',(usv<10?usv.toFixed(2):Math.round(usv))+' µSv/h'],['Daily dose',(mday<.1?mday.toFixed(3):mday.toFixed(2))+' mSv/day · '+(mday/.0066<2?'≈ Earth':'×'+Math.round(mday/.0066)+' Earth')],['600 mSv NASA career limit',mday>0?(600/mday>3650?'>10 years':Math.round(600/mday)+' days'):'—']]);tm.out=mday}}
 function tool(i){if(!cur||cur.sat||paused||Y.intro)return;var T=TOOLS[i];if(!T)return;var m=mis(T[0]);
- if(TM){if(TM.i===i){TM=null;$x('meas').style.display='none';toolsUI();return}}
- TM={i:i,t:0,dur:T[2],x:Y.x,z:Y.z,m:m};$x('msT').textContent=T[1]+' · reading';$x('msS').textContent='Hold still';$x('meas').style.display='block';au.beep(520,.06);toolsUI()}
+ if(TM&&!TM.hold){if(TM.i===i){TM=null;$x('meas').style.display='none';toolsUI();return}}
+ var MOD={temp:'PT100 thermistor probe',pres:'Capacitive barometer',air:'IR spectrometer 0.5–5 µm',rad:'Geiger–Müller counter'};
+ TM={i:i,t:0,dur:T[2],x:Y.x,z:Y.z,m:m,tg:setupTool(T)};$x('meas').classList.remove('done');$x('msT').textContent=T[1];$x('msM').textContent=MOD[T[0]];$x('msS').textContent='Hold still';$x('meas').style.display='block';MSC=null;au.beep(520,.06);toolsUI()}
 function nz(v,f){return v*(1+(Math.random()-.5)*2*f)}
 function fmtP(p){return p<1e-6?'< 0.000001 bar (vacuum)':p<.01?(p*1e5).toFixed(p<1e-3?3:1)+' Pa':p<10?p.toFixed(3)+' bar':Math.round(p)+' bar'}
-var RADT=[['≈0.007 mSv/day','Earth-like background'],['≈0.5–1.4 mSv/day','no magnetic field or thick air to shield you'],['>20 mSv/day','intense stellar or pulsar radiation']];
-function readTool(ty){var c=cur,arch=c.src?' · archive: '+(ty==='temp'?Math.round(c.t)+' °C (model)':''):'';
- if(ty==='temp'){var v=Math.round(nz(c.t+273.15,.01)-273.15);st.mv=st.mv||{};st.mv.temp=v;return['Temperature '+v+' °C',v+' °C'+(c.src?' (archive model: '+Math.round(c.t)+' °C)':'')]}
- if(ty==='pres'){var p=c.p<1e-6?c.p:nz(c.p,.02);st.mv=st.mv||{};st.mv.pres=p;return['Air pressure '+fmtP(p),fmtP(p)+(c.p>=1e-6?' · '+pp(c.p):'')]}
- if(ty==='air'){if(c.p<1e-6)return['No atmosphere detected','No gas absorption lines: the surface is in vacuum'];return['Atmosphere analysed',airTxt(c.gas)+(c.br?' · breathable':' · not breathable')]}
- if(ty==='rad'){var l=cur.rad||0,d=c.n==='Moon'?['≈1.4 mSv/day','measured by Chang\'e 4']:c.n==='Mars'?['≈0.7 mSv/day','measured by Curiosity']:RADT[l];return['Radiation '+d[0],d[0]+' · '+d[1]]}}
+function readTool(ty,tm){var c=cur,tg=tm.tg;st.mv=st.mv||{};
+ if(ty==='temp'){var v=Math.round(tg.v);st.mv.temp=v;return['Temperature '+v+' °C',v+' °C · '+(v+273)+' K'+(c.src?' (archive model: '+Math.round(c.t)+' °C)':'')]}
+ if(ty==='pres'){var p=tg.p,b=boilC(p*1e5);st.mv.pres=p;return['Air pressure '+fmtP(p),fmtP(p)+(c.p>=1e-6?' · '+pp(c.p):'')+' · '+(b===null?'liquid water impossible':'water boils at ≈'+Math.round(b)+' °C')]}
+ if(ty==='air'){if(!tg.mix.length)return['No atmosphere detected','No gas absorption lines: the surface is in vacuum'];return['Atmosphere analysed',airTxt(c.gas)+' · mean mass '+tg.mu.toFixed(1)+' g/mol'+(c.br?' · breathable':' · not breathable')]}
+ if(ty==='rad'){var d=tg.d;return['Radiation '+(d<.1?d.toFixed(3):d.toFixed(2))+' mSv/day',(d<.1?d.toFixed(3):d.toFixed(2))+' mSv/day ('+tg.src+') · '+(d/.0066<2?'about Earth level':'×'+Math.round(d/.0066)+' Earth')+' · 600 mSv limit in '+(600/d>3650?'>10 years':Math.round(600/d)+' days')]}}
+var drawAcc=0;
 function toolTick(dt){var bar=$x('tools'),on=!!(cur&&!cur.sat&&$x('menu').classList.contains('hide')&&!paused);bar.style.display=on&&!TOUCH?'flex':'none';if(!TM)return;
- if(!on){TM=null;$x('meas').style.display='none';return}var moved=Math.hypot(Y.x-TM.x,Y.z-TM.z);if(moved>1.5||!Y.on){TM.t=Math.max(0,TM.t-dt*2);$x('msS').textContent='Hold still to read';TM.x=Y.x;TM.z=Y.z}else{TM.t+=dt;$x('msS').textContent=(TM.dur-TM.t).toFixed(1)+' s'}
- $x('msF').style.width=Math.min(100,TM.t/TM.dur*100)+'%';if(TM.t>=TM.dur){var ty=TOOLS[TM.i][0],r=readTool(ty),m=TM.m;TM=null;$x('meas').style.display='none';au.beep(990,.08);hap('light');
+ if(!on){TM=null;$x('meas').style.display='none';return}var T=TOOLS[TM.i];
+ if(TM.hold){TM.hold-=dt;TM.lastdt=0;if(TM.hold<=0){TM=null;$x('meas').style.display='none';toolsUI()}return}
+ if(TM.gacc){return}
+ var moved=Math.hypot(Y.x-TM.x,Y.z-TM.z);if(moved>1.5||!Y.on){TM.t=Math.max(0,TM.t-dt*2);$x('msS').textContent='Hold still to read';TM.x=Y.x;TM.z=Y.z}else{TM.t+=dt;$x('msS').textContent='Acquiring · '+(TM.dur-TM.t).toFixed(1)+' s'}
+ TM.lastdt=dt;drawAcc+=dt;if(drawAcc>.033){drawAcc=0;drawTool(T,TM,Math.min(1,TM.t/TM.dur),false)}
+ $x('msF').style.width=Math.min(100,TM.t/TM.dur*100)+'%';if(TM.t>=TM.dur){var ty=T[0],r=readTool(ty,TM),m=TM.m;drawTool(T,TM,1,true);$x('meas').classList.add('done');$x('msS').textContent='Reading stable ✓ · saved to notebook';TM.hold=2.2;au.beep(990,.08);hap('light');
   st.meas=st.meas||{};st.meas[ty]=r[1];if(m&&!m.ok){m.d=r[1];complete(m,r[0])}else showT(r[0],r[1]);rows();toolsUI()}}
+/* accelerometer: the jump plotted as a trajectory */
+function showJump(t,h,g){var T=['grav','Accelerometer'];TM={i:-1,t:0,dur:1,x:Y.x,z:Y.z,hold:3.2,gacc:1,tg:{}};$x('meas').classList.add('done');$x('msT').textContent='Accelerometer';$x('msM').textContent='Jump trajectory';$x('msF').style.width='100%';$x('msS').textContent='g measured · saved to notebook';$x('meas').style.display='block';MSC=null;
+ var gx2=msCtx(),W=gx2.canvas.width,H=gx2.canvas.height,s2=DPR;grid(gx2,W,H);gx2.strokeStyle='#f2f2f2';gx2.lineWidth=1.6*s2;gx2.beginPath();for(var i=0;i<=60;i++){var tt=t*i/60,y=4*h*(tt/t)*(1-tt/t),X=8*s2+(W-16*s2)*i/60,Yv=H-10*s2-(y/h)*(H-28*s2);i?gx2.lineTo(X,Yv):gx2.moveTo(X,Yv)}gx2.stroke();
+ gx2.fillStyle='#fc3d21';gx2.beginPath();gx2.arc(W/2,18*s2,3*s2,0,7);gx2.fill();gx2.fillStyle='#8a8a8a';gx2.font=(9*s2)+'px "DM Mono",monospace';gx2.fillText('APEX '+h.toFixed(2)+' m',W/2+6*s2,20*s2);gx2.fillText('g = 8h / t²',8*s2,H-2*s2);
+ kp([['Flight time',t.toFixed(2)+' s'],['Apex height',h.toFixed(2)+' m'],['Gravity',g.toFixed(2)+' m/s²'],['70 kg astronaut weighs',Math.round(70*g/9.81)+' kg-force']])}
 function jumped(jh){if(!cur||cur.sat)return;var t=airT;airT=0;if(jh<.25||t<.3)return;var m=mis('grav');if(!m||m.ok)return;var g=8*jh/(t*t);if(!(Math.abs(g-cur.g)/cur.g<.25))g=nz(cur.g,.02);
- var r='Flight '+t.toFixed(2)+' s, height '+jh.toFixed(2)+' m → g = '+g.toFixed(2)+' m/s² ('+(g/9.81).toFixed(2)+' × Earth)';st.meas=st.meas||{};st.meas.grav=r;m.d=r;complete(m,'g = '+g.toFixed(2)+' m/s²');rows()}
+ var r='Flight '+t.toFixed(2)+' s, height '+jh.toFixed(2)+' m → g = '+g.toFixed(2)+' m/s² ('+(g/9.81).toFixed(2)+' × Earth)';st.meas=st.meas||{};st.meas.grav=r;m.d=r;complete(m,'g = '+g.toFixed(2)+' m/s²');rows();if(!TM)showJump(t,jh,g)}
 function dropG(ta){var m=mis('grav');if(!m||m.ok||!ta)return;var g=2*1.45/(ta*ta);if(!(Math.abs(g-cur.g)/cur.g<.25))g=nz(cur.g,.02);var r='Hammer fell 1.45 m in '+ta.toFixed(2)+' s → g = '+g.toFixed(2)+' m/s²';st.meas=st.meas||{};st.meas.grav=r;m.d=r;complete(m,'g = '+g.toFixed(2)+' m/s²');rows()}
 var GEO={moon:'Lunar regolith: crushed anorthosite and glass beads from impacts (Apollo samples)',mercury:'Dark, carbon-rich and sulfur-rich crust (MESSENGER)',mars:'Basalt coated in iron-oxide dust: why Mars is red (Curiosity)',
  venus:'Basalt, like the rock analysed by the Venera 13 lander in 1982',titan:'Liquid methane and ethane, cold enough to stay liquid at −179 °C (Huygens, Cassini)',earth:'Sea water: about 3.5% salt'};
