@@ -11,11 +11,11 @@ window.WW_SITE = {
 
   // --- Explorer Pass: sold on Gumroad (handles payment + EU VAT for you) ---
   // Gumroad product page, e.g. 'https://yourname.gumroad.com/l/worldwalk'. Leave '' to hide the pass.
-  checkoutUrl: '',
+  checkoutUrl: 'https://dynamo1138.gumroad.com/l/guvcs',
   // Gumroad product ID (product › Content › License key module › "Use your product ID…")
-  gumroadProductId: '',
+  gumroadProductId: 'x-VM-Fp8siCe1iRtv-fEWw==',
   // Price shown in the game (set the real price in Gumroad).
-  price: '€3.99',
+  price: '$3.99',
   // A key works on this many browsers/devices before it's refused (stops keys being shared publicly).
   maxUses: 10
 };
