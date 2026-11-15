@@ -702,7 +702,7 @@ function pauseGame(){if(cur&&Y.hp>0&&$('menu').classList.contains('hide')&&!paus
 function back(){var op=function(id){return !$(id).classList.contains('hide')};if(op('adv'))return true;if(op('info')){$('infX').click();return true}if(op('offer')){$('ofN').click();return true}if(op('cmp')){$('cmpX').click();return true}if(op('done')){$('dnX').click();return true}
 if(op('lo')){$('lo').classList.add('hide');pause(false);menu('Choose a world','Pick a world to start exploring.');return true}if(op('exm')){$('exm').classList.add('hide');return true}if($('menu').classList.contains('hide')){menu('Paused','Tap Resume to keep exploring.');return true}if(cur&&Y.hp>0){$('menu').classList.add('hide');return true}return false}
 window.WWback=back;window.WWpauseGame=pauseGame;
-$('loL').onclick=function(){XT.descend(landNow)};function landNow(){if(TOUCH&&!SV.th){SV.th=1;save();setTimeout(function(){showT('Touch controls','Left thumb moves (push to the edge to sprint). Drag the right side to look. Buttons: Jump, Drop, Throw, Use.')},2500)}$('lo').classList.add('hide');pause(false);st.o2=100;st.jet=6;st.t0=0;$('jetr').style.display=M.jet?'flex':'none';au.init();
+$('loL').onclick=function(){XT.descend(landNow)};function landNow(){if(TOUCH&&!SV.th){SV.th=1;save();setTimeout(function(){showT('Touch controls','Left thumb moves (push to the edge to sprint). Drag the right side to look. Buttons: Measure, Jump, Drop, Throw, Use.')},2500)}$('lo').classList.add('hide');pause(false);st.o2=100;st.jet=6;st.t0=0;$('jetr').style.display=M.jet?'flex':'none';au.init();
 var e=est(M);showT('Landed on '+cur.n,(cur.br?'The air is breathable. ':'')+'Estimated suit time here: '+fmtT(e.t)+'. '+(cur.sat?'Sink to the depths in the objectives. ':'Return to the lander to refill oxygen and repair your suit. ')+snd())};
 /* ---------- state ---------- */
 var st={o2:100,jet:6,t0:0,maxJ:0,gy:0,stepD:0,bob:0,phase:0,air:0,onPrev:true,mis:[],done:false,key:''};
@@ -720,6 +720,7 @@ function shore(cx,cz,wl,off,r1){var p=srch(cx,cz,10,r1||320,function(h,r){return
 function ex(o,b){for(var k in b)o[k]=b[k];return o}
 function build(key){var sx=Y.x,sz=Y.z,wl=cur.wl===undefined?-1e9:cur.wl,L=[],a=cur.ts&&cur.ts.a;
 if(cur.sat){L.push({ty:'depth',t:'Sink to the cloud tops',d:'Where the air pressure equals Earth\'s at sea level.',val:0},{ty:'depth',t:'Dive 100 km into the clouds',d:'About 12× Earth\'s air pressure. Hot and crushing: plan your suit.',val:100});return L}
+return XT.plan(key);
 if(key==='moon')L.push({ty:'drop',t:'Recreate Apollo 15: drop the hammer and feather',d:'Press E (Drop). With no air, see what happens.'},ex({ty:'beacon',t:'Plant a beacon on the big crater floor',d:'Walk to the marker and press X (Use).',r:22},basin(160,90,-1e9,0,45)),{ty:'jump',t:'Jump higher than 5 m',d:'Low gravity: just jump.',val:5});
 else if(key==='mercury')L.push(ex({ty:'beacon',t:'Plant a beacon in the giant impact basin',d:'A scaled-down Caloris Basin. Walk to the marker and press X (Use).',r:24},basin(-180,140,-1e9,0,70)),{ty:'reach',t:'Climb the great cliff',d:'Cliffs like this formed as Mercury shrank. Follow the marker.',x:290,z:0,r:14,minY:H(290,0)-3},{ty:'drop',t:'Drop the hammer and feather',d:'Press E. With no air, they land together.'});
 else if(key==='mars')L.push(ex(summit(500,-300,0,60),{t:'Climb Olympus Mons (scaled down)',d:'The tallest volcano in the solar system.'}),{ty:'reach',t:'Stand on the rim of Valles Marineris',d:'A canyon system 4,000 km long.',x:0,z:212,r:16},{ty:'throw',t:'Throw a rock farther than 40 m',d:'Press F (Throw). Aim up for distance.',val:40});
@@ -738,7 +739,7 @@ cur.rad=radLvl(cur);if(!cur.sat){lander.position.set(Y.x-6,H(Y.x-6,Y.z+4)-.1,Y.z
 st.mis=build(k);st.mis.forEach(function(m){m.ok=false;if(m.x!==undefined)addMk(m)});
 $('ms').style.display='block';$('cmpb').style.display='block';if(TOUCH)$('acts').style.display='flex';renderMis();XT.landed();loadout()}
 function renderMis(){var all=st.mis.every(function(m){return m.ok});
-$('ms').innerHTML='<b>Survey'+(st.done?' complete ✓':SV.done[st.key]?' (surveyed before)':'')+'</b>'+st.mis.map(function(m){return'<div class="mi'+(m.ok?' ok':'')+'"><i>'+(m.ok?'✓':'○')+'</i><span>'+m.t+(m.ok?'':'<small>'+m.d+'</small>')+'</span></div>'}).join('')+(all&&!cur.sat&&!st.done?'<div class="mi go"><i>➜</i><span>Return to the lander to finish the survey</span></div>':'')+'<div id="nav"></div>';XT.ms()}
+$('ms').innerHTML='<b>Field notebook'+(st.done?' · transmitted':SV.done[st.key]?' · surveyed before':'')+'</b>'+st.mis.map(function(m){return'<div class="mi'+(m.ok?' ok':'')+'"><i>'+(m.ok?'✓':'○')+'</i><span>'+m.t+'<small>'+m.d+'</small>'+'</span></div>'}).join('')+(all&&!cur.sat&&!st.done?'<div class="mi go"><i>➜</i><span>Return to the lander to transmit your report</span></div>':'')+'<div id="nav"></div>';XT.ms()}
 function hap(k){if(window.WWhaptic)return WWhaptic(k);if(TOUCH&&navigator.vibrate)try{navigator.vibrate(k==='heavy'?60:25)}catch(e){}}
 function complete(m,msg){if(m.ok)return;m.ok=true;XT.obj(m);hap('success');MK.forEach(function(k){if(k.ms===m){k.b.visible=k.r.visible=false}});renderMis();au.chime();showT('Objective complete',m.t+(msg?'. '+msg:''));if(cur.sat&&st.mis.every(function(x){return x.ok}))finish()}
 function finish(){if(st.done)return;st.done=true;var before=snapshot();SV.done[st.key]=1;save();var after=snapshot(),nw=after.filter(function(x){return before.indexOf(x)<0});renderMis();refresh();
@@ -760,11 +761,11 @@ o.p.addScaledVector(o.v,dt);var gy=H(o.p.x,o.p.z)-WT.drop(o.p.x,o.p.z),wl=cur.wl
 function landed(o){if(o.thr){var dist=Math.hypot(o.p.x-o.x0,o.p.z-o.z0),vs=15*Math.sin(o.ang),vh=15*Math.cos(o.ang),re=vs>-20?vh/9.81*(vs+Math.sqrt(Math.max(0,vs*vs+2*9.81*1.5))):0,txt=dist.toFixed(1)+' m away after '+o.age.toFixed(1)+' s.'+(cur.n!=='Earth'&&re>0?' The same throw on flat ground on Earth: about '+Math.round(re)+' m.':'');var tm=st.mis.filter(function(m){return m.ty==='throw'&&!m.ok&&dist>=m.val})[0];if(tm)complete(tm,txt);else showT('Rock landed',txt)}
 if(drop0&&drop0.a.land&&drop0.b.land&&!drop0.rep){drop0.rep=1;var ta=drop0.a.age,tb=drop0.b.age,r=rho(),msg;
 if(r<.005)msg='No air: they hit the ground together, just as astronaut David Scott showed on the Moon in 1971 (Apollo 15).';else if(tb<ta*1.15)msg='The air is so thin the feather barely slowed down.';else msg='Air drag held the feather back: it took '+(tb/ta).toFixed(1)+'× longer. Air density here is '+(r>=1?r.toFixed(1):r.toFixed(3))+' kg/m³ (Earth: 1.2).';
-var hd='Hammer: '+ta.toFixed(2)+' s · Feather: '+tb.toFixed(2)+' s',dm=st.mis.filter(function(m){return m.ty==='drop'&&!m.ok})[0];if(dm)complete(dm,hd+'. '+msg);else showT(hd,msg)}}
+XT.dropG(ta);var hd='Hammer: '+ta.toFixed(2)+' s · Feather: '+tb.toFixed(2)+' s',dm=st.mis.filter(function(m){return m.ty==='drop'&&!m.ok})[0];if(dm)complete(dm,hd+'. '+msg);else showT(hd,msg)}}
 /* ---------- use: beacon / sample ---------- */
 var bcM=new THREE.MeshStandardMaterial({color:0xdddddd,roughness:.5}),bcL=new THREE.MeshBasicMaterial({color:0xff4040});
 function use(){if(!cur||paused||cur.sat)return;if(XT.scan())return;var near=null,nd=1e9;st.mis.forEach(function(m){if(m.ok||m.x===undefined||(m.ty!=='beacon'&&m.ty!=='sample'))return;var d=Math.hypot(Y.x-m.x,Y.z-m.z);if(d<nd){nd=d;near=m}});
-if(near&&nd<=near.r){if(near.minY!==undefined&&Y.y<near.minY){showT('Not high enough','Climb higher to reach the marked spot.');return}if(near.ty==='beacon'){var b=new THREE.Group(),pl=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,2.2,6),bcM);pl.position.y=1.1;var lt=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),bcL);lt.position.y=2.25;b.add(pl,lt);b.userData.lt=lt;b.position.set(Y.x,Y.y,Y.z);b.traverse(function(o){o.castShadow=true});sc.add(b);BC.push(b);au.beep(880,.15);complete(near,'Beacon transmitting')}else{au.beep(660,.12);complete(near,'Sample stored')}return}
+if(near&&nd<=near.r){if(near.minY!==undefined&&Y.y<near.minY){showT('Not high enough','Climb higher to reach the marked spot.');return}if(near.ty==='beacon'){var b=new THREE.Group(),pl=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,2.2,6),bcM);pl.position.y=1.1;var lt=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),bcL);lt.position.y=2.25;b.add(pl,lt);b.userData.lt=lt;b.position.set(Y.x,Y.y,Y.z);b.traverse(function(o){o.castShadow=true});sc.add(b);BC.push(b);au.beep(880,.15);complete(near,'Beacon transmitting')}else{au.beep(660,.12);near.d=XT.geo();complete(near,'Sample analysed: '+near.d)}return}
 if(near)showT('Too far','The nearest '+(near.ty==='beacon'?'beacon site':'sample site')+' is '+Math.round(nd)+' m away. Follow the light beam.');else showT('Nothing to use here','Beacons and samples go at the marked sites.')}
 /* ---------- movement hooks ---------- */
 var jbHeld=false;$('jump').addEventListener('touchstart',function(){jbHeld=true});$('jump').addEventListener('touchend',function(){jbHeld=false});
@@ -785,7 +786,7 @@ var w=r>=.05?'Suit failing: '+top[0].toLowerCase()+' ('+Math.round(Y.hp)+'%)':r>
 beepT-=dt;if((Y.hp<25||st.o2<20)&&beepT<=0&&!Y.intro){au.beep(1200,.08);beepT=1.2}
 if(Y.hp<=0){hap('heavy');var cz=top?top[0]:'Suit damage',why=cz+' on '+cur.n+'. Try a different suit loadout: pick a world to try again.';pause(true);XT.died(cz);if(!st.revUsed){st.revUsed=true;offer('Suit failed: '+cz.toLowerCase(),(hasPass()?'Explorer Pass: get':'With the Explorer Pass you get')+' pulled back to '+(cur.sat?'safer altitude':'your lander')+' with half your suit and fresh oxygen, once per landing.',hasPass()?'Revive':'Revive · Explorer Pass',function(){Ads.rewarded('revive',function(ok){if(!ok){pause(false);Y.hp=0;menu('Suit failed',why);return}Y.hp=50;st.o2=Math.max(st.o2,70);if(cur.sat){Y.y+=18}else{Y.x=lander.position.x+3;Y.z=lander.position.z+3;Y.y=H(Y.x,Y.z)+.5;Y.vy=0}pause(false)})},'Give up',function(){Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})})}else{Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})}Y.hp=Math.max(Y.hp,.01);return}
 /* jump tracking */
-if(!cur.sat){if(Y.on&&!st.onPrev){au.thud(80,rho(),1);XT.shake(.25);var jh=st.peak-st.gy;if(jh>st.maxJ)st.maxJ=jh;st.mis.forEach(function(m){if(m.ty==='jump'&&!m.ok&&jh>=m.val)complete(m,'You jumped '+jh.toFixed(1)+' m')})}if(Y.on){st.gy=Y.y;st.peak=Y.y}else st.peak=Math.max(st.peak,Y.y);st.onPrev=Y.on}
+if(!cur.sat){if(Y.on&&!st.onPrev){au.thud(80,rho(),1);XT.shake(.25);var jh=st.peak-st.gy;if(jh>st.maxJ)st.maxJ=jh;XT.jumped(jh)}if(Y.on){st.gy=Y.y;st.peak=Y.y}else st.peak=Math.max(st.peak,Y.y);st.onPrev=Y.on}
 /* objectives */
 if(!Y.intro){st.t0+=dt;st.mis.forEach(function(m){if(m.ok)return;if(m.ty==='reach'&&Math.hypot(Y.x-m.x,Y.z-m.z)<=m.r&&(m.minY===undefined||Y.y>=m.minY))complete(m);else if(m.ty==='survive'&&st.t0>=m.val)complete(m);else if(m.ty==='depth'&&Y.sd>=m.val)complete(m)});
 if(!cur.sat&&!st.done&&nearL&&st.mis.length&&st.mis.every(function(m){return m.ok}))finish()}
@@ -823,7 +824,7 @@ function mute(){muted=!muted;if(mst)mst.gain.value=muted?0:.7;showT(muted?'Sound
 window.WWaudio=function(on){try{if(C){if(on)C.resume();else C.suspend()}}catch(e){}};return{init:init,tick:tick,step:step,thud:thud,beep:beep,chime:chime,whoosh:whoosh,quiet:quiet,mute:mute}})();
 function quiet(){au.quiet()}
 function snd(){var p=cur.sat?Y.sp:cur.p;return p<1e-4?'Outside is silent: with no air, you only hear your own breathing and footsteps through the suit.':p<.05?'The thin air makes outside sounds faint and muffled.':p>10?'The dense air carries sound loudly and slows you down.':''}
-addEventListener('pointerdown',function(){au.init()});addEventListener('keydown',function(e){au.init();if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(!cur||paused||!$('menu').classList.contains('hide'))return;if(e.code==='KeyE')drop();else if(e.code==='KeyF')throwR();else if(e.code==='KeyX')use();else if(e.code==='KeyC')cmpOpen();else if(e.code==='KeyI'&&typeof openInfo==='function')openInfo();else if(e.code==='KeyM')au.mute()});
+addEventListener('pointerdown',function(){au.init()});addEventListener('keydown',function(e){au.init();if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;if(!cur||paused||!$('menu').classList.contains('hide'))return;if(e.code==='KeyE')drop();else if(e.code==='KeyF')throwR();else if(e.code==='KeyX')use();else if(/^Digit[1-4]$/.test(e.code))XT.tool(+e.code.slice(5)-1);else if(e.code==='KeyC')cmpOpen();else if(e.code==='KeyI'&&typeof openInfo==='function')openInfo();else if(e.code==='KeyM')au.mute()});
 $('o2ad').onclick=function(e){e.stopPropagation();if(st.o2Used)return;pause(true);Ads.rewarded('2 extra minutes of oxygen',function(ok){if(ok){st.o2Used=true;st.o2=Math.min(100,st.o2+100*120/o2T(M))}pause(false)})};
 $('aDrop').onclick=drop;$('aThrow').onclick=throwR;$('aUse').onclick=use;$('cmpb').onclick=function(){cmpOpen()};
 /* ---------- compare ---------- */
@@ -1095,13 +1096,13 @@ function volTick(dt){if(!VO)return;VO.t+=dt;if(wat.material!==watMat0&&wat.mater
 /* ---------- records, achievements, daily planet ---------- */
 function key(){return st.key||''}
 function rec(){var k=key();return SV.rec[k]=SV.rec[k]||{}}
-var ACH=[['first','🚀','First steps','Land on any world'],['apollo','🪶','Apollo 15','Drop the hammer and feather on the Moon'],['venus','🔥','Pressure cooker','Survive 90 seconds on Venus'],['jump','🦘','Sky high','Jump higher than 10 m'],['mars','🥾','Long walk','Walk 1 km on Mars'],
+var ACH=[['first','🚀','First steps','Land on any world'],['apollo','🪶','Apollo 15','Drop the hammer and feather on the Moon'],['venus','🔥','Pressure cooker','Complete a field survey on Venus'],['jump','🦘','Sky high','Jump higher than 10 m'],['mars','🥾','Long walk','Walk 1 km on Mars'],
 ['s3','🧭','Surveyor','Complete 3 surveys'],['s10','🏅','Veteran surveyor','Complete 10 surveys'],['w5','🌍','Tourist','Land on 5 different worlds'],['hz','🌱','Goldilocks','Land on 3 worlds in a habitable zone'],['lava','🌋','Fire walker','Land on a lava world'],
 ['ocean','🌊','Water world','Land on an ocean world'],['far','🔭','Deep space','Land on a world more than 1,000 light-years away'],['close','💓','Close call','Finish a survey with your suit below 10%'],['daily','📅','Daily explorer','Complete the planet of the day 3 days in a row'],['life','🧫','First contact','Scan a life form (imagined)']];
 function unlock(id){if(SV.ach[id])return;SV.ach[id]=today();save();var a=ACH.filter(function(x){return x[0]===id})[0];if(!a)return;var b=$x('achb'),ov=[].some.call(D.querySelectorAll('.ovl'),function(o){return !o.classList.contains('hide')});b.style.top=ov?'calc(10px + env(safe-area-inset-top,0px))':'auto';b.style.bottom=ov?'auto':'';b.innerHTML='Milestone · <b>'+a[2]+'</b> · '+a[3];b.classList.add('on');au.chime();clearTimeout(b._t);b._t=setTimeout(function(){b.classList.remove('on')},4200)}
 function achList(){$x('achL').innerHTML=ACH.map(function(a){var on=SV.ach[a[0]];return'<div class="a'+(on?'':' no')+'"><i>'+(on?'✓':'—')+'</i><span><b>'+a[2]+'</b><small>'+a[3]+(on?' · '+on:'')+'</small></span></div>'}).join('');$x('ach').classList.remove('hide')}
 function daily(){var L=CUR.filter(function(d){return d.a!=='gas'});return L[dayN()%L.length]}
-function stars(k){var s=(SV.rec[k]||{}).stars||0;return s?s+'/3':''}
+function stars(k){var o=SV.rec[k]||{},s=o.stars||0;return s?s+'/'+(o.tot||s):''}
 function link(){var b=window.WWsite?location.origin:'https://exolander.space';return b+'/planets/'+wwSlug(cur.n)+'.html'}
 
 /* ---------- share card ---------- */
@@ -1133,9 +1134,9 @@ function tips(){if(SV.tut||!cur||cur.n!=='Moon')return;tut={s:0,x:Y.x,z:Y.z,t:0}
 function tipShow(h,sm2){var t=$x('tip');t.innerHTML=h+(sm2?'<small>'+sm2+'</small>':'');t.style.display='block'}
 function tipTick(dt){if(!tut||Y.intro||GM.paused)return;tut.t+=dt;var T2=TOUCH;
  if(tut.s===0){tipShow(T2?'Move: left thumb':'Move: W A S D','Drag '+(T2?'the right side':'the mouse')+' to look around.');if(Math.hypot(Y.x-tut.x,Y.z-tut.z)>7){tut.s=1;tut.t=0}}
- else if(tut.s===1){tipShow(T2?'Jump: tap Jump':'Jump: Space','Lunar gravity is 1.62 m/s², one sixth of Earth\'s.');if(st.maxJ>.8){tut.s=2;tut.t=0}}
- else if(tut.s===2){tipShow(T2?'Experiment: tap Drop':'Experiment: press E','Drop a hammer and a feather together. Without air, both fall at the same rate (Apollo 15, 1971).');if(st.mis.some(function(m){return m.ty==='drop'&&m.ok})){tut.s=3;tut.t=0}}
- else if(tut.s===3){tipShow('Survey: follow the beacons','Complete the objectives, then return to the lander.');if(tut.t>6){$x('tip').style.display='none';tut=null;SV.tut=1;save()}}}
+ else if(tut.s===1){tipShow(T2?'Measure gravity: tap Jump':'Measure gravity: press Space','Your suit times the jump: flight time and height give g.');if((st.meas||{}).grav){tut.s=2;tut.t=0}}
+ else if(tut.s===2){tipShow(T2?'Read the temperature: tap Thermometer':'Read the temperature: press 1','Hold still for 3 seconds while the instrument settles.');if((st.meas||{}).temp){tut.s=3;tut.t=0}}
+ else if(tut.s===3){tipShow('Fill the field notebook','Use the other instruments, collect the sample, then return to the lander to transmit.');if(tut.t>6){$x('tip').style.display='none';tut=null;SV.tut=1;save()}}}
 
 /* ---------- menu: play button, daily planet, records, pass ---------- */
 function menuHook(){var L=$x('list');if(!L)return;var h=$x('hero');if(!h){h=D.createElement('div');h.id='hero';L.parentNode.insertBefore(h,L)}
@@ -1200,32 +1201,80 @@ function lifeTick(dt){if(!LF)return;LF.t+=dt;var t=LF.t;LF.anim.forEach(function
 function scan(){if(!LF)return false;var best=null,bd=1e9;LF.ents.forEach(function(en){var x=en.g?en.g.position.x:en.x,z=en.g?en.g.position.z:en.z,y=en.g?en.g.position.y:Y.y,d=Math.hypot(x-Y.x,z-Y.z)+(en.k==='float'?Math.max(0,Math.abs(y-Y.y)-6):0);if(d<bd){bd=d;best=en}});
  var R0=best&&best.k==='float'?10:best&&best.k==='graze'?6:4.5;if(!best||bd>R0)return false;var inf=LIFEI[best.k];au.beep(990,.1);hap('light');
  unlock('life');var m=st.mis.filter(function(x){return x.ty==='scan'&&!x.ok})[0];if(m){complete(m,'Life form scanned');setTimeout(function(){showT('Scan: '+inf[0]+' · imagined',inf[1])},2200)}else showT('Scan: '+inf[0]+' · imagined',inf[1]);return true}
+
+/* ---------- field survey: measure the world with instruments ---------- */
+var TOOLS=[['temp','Thermometer',3],['pres','Barometer',2],['air','Spectrometer',4],['rad','Dosimeter',5]],TM=null,airT=0;
+D.body.insertAdjacentHTML('beforeend','<div id="tools"></div><div id="meas"><b id="msT"></b><div class="mb"><i id="msF"></i></div><small id="msS"></small></div>');
+var tcss=D.createElement('style');tcss.textContent=['#tools{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));display:none;gap:6px;z-index:2}',
+'#tools button{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.62);color:#f2f2f2;border:1px solid #3a3a3a;border-radius:2px;padding:8px 10px;cursor:pointer;pointer-events:auto}#tools button.ok{border-color:#9be3ae;color:#9be3ae}#tools button.on{border-color:#fff;background:rgba(255,255,255,.12)}#tools button i{font-style:normal;opacity:.55;margin-right:5px}',
+'#meas{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:3;display:none;background:rgba(0,0,0,.8);border:1px solid #f2f2f2;border-radius:2px;padding:12px 16px;min-width:240px;text-align:center}#meas b{display:block;font:500 12px var(--mono);letter-spacing:.08em;text-transform:uppercase}#meas .mb{height:3px;background:#333;margin:10px 0 6px}#meas .mb i{display:block;height:100%;width:0;background:#f2f2f2}#meas small{font:400 11px var(--mono);color:#9a9a9a}',
+'@media (max-height:520px){#tools{bottom:auto;top:calc(8px + env(safe-area-inset-top,0px))}#tools button{padding:6px 8px;font-size:10px}#tools button span{display:none}#tools button i{opacity:1;margin:0}}',
+'@media (orientation:portrait) and (max-width:600px){#tools{bottom:auto;top:calc(96px + env(safe-area-inset-top,0px));left:8px;transform:none;flex-wrap:wrap;max-width:62vw}#tools button span{display:none}#tools button i{opacity:1;margin:0}#tools button:after{content:attr(data-s)}}'].join('');D.head.appendChild(tcss);
+function nextTool(){for(var i=0;i<TOOLS.length;i++){var m=mis(TOOLS[i][0]);if(m&&!m.ok)return i}return -1}
+var meab=null;if(TOUCH){meab=D.createElement('button');meab.className='btn sm';meab.id='meab';var ac=$x('acts');ac.insertBefore(meab,ac.firstChild);meab.addEventListener('touchstart',function(e){e.stopPropagation()},{passive:true});meab.onclick=function(e){e.stopPropagation();var i=TM?TM.i:nextTool();if(i<0){showT('All readings taken','Collect the sample and return to the lander.');return}tool(i)}}
+function toolsUI(){if(meab){var n=TM?TM.i:nextTool();meab.textContent=n<0?'Readings ✓':TM?'Cancel':'Measure: '+TOOLS[n][1].slice(0,7)}var t=$x('tools');t.innerHTML=TOOLS.map(function(x,i){var m=mis(x[0]);return'<button data-s=" '+x[1].slice(0,5)+'" data-i="'+i+'" class="'+(m&&m.ok?'ok':'')+(TM&&TM.i===i?' on':'')+'"><i>'+(i+1)+'</i><span>'+x[1]+'</span></button>'}).join('');
+ [].forEach.call(t.children,function(b){b.onclick=function(e){e.stopPropagation();tool(+b.dataset.i)}})}
+function mis(ty){return st.mis&&st.mis.filter(function(m){return m.ty===ty})[0]}
+function tool(i){if(!cur||cur.sat||paused||Y.intro)return;var T=TOOLS[i];if(!T)return;var m=mis(T[0]);
+ if(TM){if(TM.i===i){TM=null;$x('meas').style.display='none';toolsUI();return}}
+ TM={i:i,t:0,dur:T[2],x:Y.x,z:Y.z,m:m};$x('msT').textContent=T[1]+' · reading';$x('msS').textContent='Hold still';$x('meas').style.display='block';au.beep(520,.06);toolsUI()}
+function nz(v,f){return v*(1+(Math.random()-.5)*2*f)}
+function fmtP(p){return p<1e-6?'< 0.000001 bar (vacuum)':p<.01?(p*1e5).toFixed(p<1e-3?3:1)+' Pa':p<10?p.toFixed(3)+' bar':Math.round(p)+' bar'}
+var RADT=[['≈0.007 mSv/day','Earth-like background'],['≈0.5–1.4 mSv/day','no magnetic field or thick air to shield you'],['>20 mSv/day','intense stellar or pulsar radiation']];
+function readTool(ty){var c=cur,arch=c.src?' · archive: '+(ty==='temp'?Math.round(c.t)+' °C (model)':''):'';
+ if(ty==='temp'){var v=Math.round(nz(c.t+273.15,.01)-273.15);st.mv=st.mv||{};st.mv.temp=v;return['Temperature '+v+' °C',v+' °C'+(c.src?' (archive model: '+Math.round(c.t)+' °C)':'')]}
+ if(ty==='pres'){var p=c.p<1e-6?c.p:nz(c.p,.02);st.mv=st.mv||{};st.mv.pres=p;return['Air pressure '+fmtP(p),fmtP(p)+(c.p>=1e-6?' · '+pp(c.p):'')]}
+ if(ty==='air'){if(c.p<1e-6)return['No atmosphere detected','No gas absorption lines: the surface is in vacuum'];return['Atmosphere analysed',airTxt(c.gas)+(c.br?' · breathable':' · not breathable')]}
+ if(ty==='rad'){var l=cur.rad||0,d=c.n==='Moon'?['≈1.4 mSv/day','measured by Chang\'e 4']:c.n==='Mars'?['≈0.7 mSv/day','measured by Curiosity']:RADT[l];return['Radiation '+d[0],d[0]+' · '+d[1]]}}
+function toolTick(dt){var bar=$x('tools'),on=!!(cur&&!cur.sat&&$x('menu').classList.contains('hide')&&!paused);bar.style.display=on&&!TOUCH?'flex':'none';if(!TM)return;
+ if(!on){TM=null;$x('meas').style.display='none';return}var moved=Math.hypot(Y.x-TM.x,Y.z-TM.z);if(moved>1.5||!Y.on){TM.t=Math.max(0,TM.t-dt*2);$x('msS').textContent='Hold still to read';TM.x=Y.x;TM.z=Y.z}else{TM.t+=dt;$x('msS').textContent=(TM.dur-TM.t).toFixed(1)+' s'}
+ $x('msF').style.width=Math.min(100,TM.t/TM.dur*100)+'%';if(TM.t>=TM.dur){var ty=TOOLS[TM.i][0],r=readTool(ty),m=TM.m;TM=null;$x('meas').style.display='none';au.beep(990,.08);hap('light');
+  st.meas=st.meas||{};st.meas[ty]=r[1];if(m&&!m.ok){m.d=r[1];complete(m,r[0])}else showT(r[0],r[1]);rows();toolsUI()}}
+function jumped(jh){if(!cur||cur.sat)return;var t=airT;airT=0;if(jh<.25||t<.3)return;var m=mis('grav');if(!m||m.ok)return;var g=8*jh/(t*t);if(!(Math.abs(g-cur.g)/cur.g<.25))g=nz(cur.g,.02);
+ var r='Flight '+t.toFixed(2)+' s, height '+jh.toFixed(2)+' m → g = '+g.toFixed(2)+' m/s² ('+(g/9.81).toFixed(2)+' × Earth)';st.meas=st.meas||{};st.meas.grav=r;m.d=r;complete(m,'g = '+g.toFixed(2)+' m/s²');rows()}
+function dropG(ta){var m=mis('grav');if(!m||m.ok||!ta)return;var g=2*1.45/(ta*ta);if(!(Math.abs(g-cur.g)/cur.g<.25))g=nz(cur.g,.02);var r='Hammer fell 1.45 m in '+ta.toFixed(2)+' s → g = '+g.toFixed(2)+' m/s²';st.meas=st.meas||{};st.meas.grav=r;m.d=r;complete(m,'g = '+g.toFixed(2)+' m/s²');rows()}
+var GEO={moon:'Lunar regolith: crushed anorthosite and glass beads from impacts (Apollo samples)',mercury:'Dark, carbon-rich and sulfur-rich crust (MESSENGER)',mars:'Basalt coated in iron-oxide dust: why Mars is red (Curiosity)',
+ venus:'Basalt, like the rock analysed by the Venera 13 lander in 1982',titan:'Liquid methane and ethane, cold enough to stay liquid at −179 °C (Huygens, Cassini)',earth:'Sea water: about 3.5% salt'};
+function geo(){var k=st.key,a=cur.ts&&cur.ts.a,p=cur.ts&&cur.ts.p;if(GEO[k])return GEO[k];
+ return(a==='lava'?(p==='sulfur'?'Sulfur and silicate lava, like Jupiter\'s moon Io':p==='iron'?'Iron-rich molten rock':'Molten basalt cooling into black glass'):a==='ice'?'Water ice mixed with salts and dust':a==='ocean'?'Water with dissolved salts':a==='crater'?'Basaltic regolith shattered by impacts':'Silicate rock with iron and magnesium minerals')+' (imagined from the planet\'s density and temperature)'}
+function plan(key){var sx=Y.x,sz=Y.z,wl=cur.wl===undefined?-1e9:cur.wl,L=[],a=cur.ts&&cur.ts.a;
+ L.push({ty:'grav',t:'Measure gravity',d:'Jump: your flight time and height give g.'},{ty:'temp',t:'Measure the temperature',d:'Thermometer: press 1 and hold still.'},{ty:'pres',t:'Measure the air pressure',d:'Barometer: press 2.'},
+  {ty:'air',t:'Analyse the atmosphere',d:'Spectrometer: press 3.'},{ty:'rad',t:'Measure the radiation dose',d:'Dosimeter: press 4.'});
+ var smp=key==='moon'?basin(160,90,-1e9,0,45):key==='mercury'?basin(-180,140,-1e9,0,70):key==='titan'?shore(-200,-150,wl,.4,140):(wl>-1e8?shore(sx,sz,wl,a==='lava'?1.2:.3):basin(sx,sz,wl));
+ L.push({ty:'sample',t:key==='titan'?'Sample the methane lake':a==='lava'?'Sample the lava lake':wl>-1e8&&key!=='moon'&&key!=='mercury'?'Sample the shoreline':'Collect a rock sample',d:'Walk to the marker and press X.',r:10,x:smp.x,z:smp.z});
+ if(key==='moon')L.push({ty:'drop',t:'Apollo 15 experiment',d:'Press E: drop a hammer and a feather together.'});
+ if(lifeOf(cur))L.push({ty:'scan',t:'Scan a life form',d:'Life here is imagined. Get close to something living and press X.'});
+ return L}
+function rows(){if(!cur||cur.sat)return;var M2=st.meas||{},q=function(k,v,h){return M2[k]?v:'<span style="opacity:.5">— '+h+'</span>'};
+ var R2=[['Gravity',q('grav',gx(cur.g),'jump')],['Temperature',q('temp',((st.mv||{}).temp!==undefined?st.mv.temp:Math.round(cur.t))+' °C','[1] thermometer')],['Air pressure',q('pres',fmtP((st.mv||{}).pres!==undefined?st.mv.pres:cur.p),'[2] barometer')],['Air',q('air',cur.p<1e-6?'None (vacuum)':airTxt(cur.gas),'[3] spectrometer')],
+  ['Breathable',q('air',cur.br?'Yes':'No: suit air','[3] spectrometer')],['Radiation',q('rad',['Low','Moderate','High'][cur.rad||0],'[4] dosimeter')],['More','Tap <b>Info</b>']];
+ $x('rows').innerHTML=R2.map(function(r){return '<div class="r"><span>'+r[0]+'</span><span>'+r[1]+'</span></div>'}).join('')}
 /* ---------- hooks called by the game ---------- */
 function landed(){SV.lands++;var n=cur.n;SV.seen[n]=1;save();RES=null;visorOff();crk=-1;cracks(0);fpClear();for(var i=0;i<DN;i++){dL[i]=0;dP[i*3+1]=-1e5}
  var pc=cur.ts&&WT.PAL[cur.ts.p]?WT.PAL[cur.ts.p][0]:'#9a8a78';dM.color.set(pc).lerp(new THREE.Color(0xaaaaaa),.25);GL.set(specOf(cur));$x('hs').textContent=Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g';$x('o2ad').textContent=hasPass()?'+2 min O₂':'+2 min O₂ · Explorer Pass';st.dist=0;st.px=Y.x;st.pz=Y.z;st.minHp=100;
- volcanic(!!(cur.ts&&cur.ts.a==='lava'));lifeSpawn();
+ volcanic(!!(cur.ts&&cur.ts.a==='lava'));lifeSpawn();st.meas={};st.mv={};TM=null;$x('meas').style.display='none';airT=0;rows();toolsUI();
  unlock('first');if(Object.keys(SV.seen).length>=5)unlock('w5');var s=cur.src;
  if(s){if(s.a==='lava')unlock('lava');if(s.a==='ocean')unlock('ocean');if(s.ly>1000)unlock('far');if(s.t>=180&&s.t<=320&&s.r<2.5){SV.hzs=SV.hzs||{};SV.hzs[n]=1;save();if(Object.keys(SV.hzs).length>=3)unlock('hz')}}
  tips()}
 function lo(){if(quick||SV.lands<=1){quick=false;setTimeout(function(){if(!$x('lo').classList.contains('hide'))$x('loL').click()},30)}}
-function tick(dt,c,h,r){if(!cur)return;visor(c,h);dustTick(dt);volTick(dt);lifeTick(dt);tipTick(dt);st.minHp=Math.min(st.minHp||100,Y.hp);
+function tick(dt,c,h,r){if(!cur)return;visor(c,h);dustTick(dt);volTick(dt);lifeTick(dt);toolTick(dt);if(!Y.on)airT+=dt;tipTick(dt);st.minHp=Math.min(st.minHp||100,Y.hp);
  if(Y.on&&!cur.sat&&!Y.intro){var d=Math.hypot(Y.x-st.px,Y.z-st.pz);if(d<20){st.dist+=d;if(cur.n==='Mars'){SV.mw=(SV.mw||0)+d;if(SV.mw>=1000)unlock('mars')}}st.px=Y.x;st.pz=Y.z}
  if(st.maxJ>10)unlock('jump')}
-function obj(m){var k=key(),R0=rec(),n=st.mis.filter(function(x){return x.ok}).length;R0.stars=Math.max(R0.stars||0,Math.min(3,n));save();
- if(cur.n==='Moon'&&m.ty==='drop')unlock('apollo');if(cur.n==='Venus'&&m.ty==='survive')unlock('venus')}
+function obj(m){var k=key(),R0=rec(),n=st.mis.filter(function(x){return x.ok}).length;R0.stars=Math.max(R0.stars||0,n);R0.tot=st.mis.length;save();
+ if(cur.n==='Moon'&&m.ty==='drop')unlock('apollo')}
 function died(cause){var R0=rec(),t=st.t0,best=!R0.surv||t>R0.surv;if(best)R0.surv=t;R0.jump=Math.max(R0.jump||0,st.maxJ||0);save();grab();
  RES={dead:true,tag:cause+' on '+cur.n,big:'I lasted '+(t<60?t.toFixed(1)+' s':Math.floor(t/60)+' min '+Math.round(t%60)+' s')+' on '+cur.n,sub:Math.round(cur.t)+' °C · '+pp(cur.p).replace('Same as Earth','Earth-like air')+' pressure · '+(cur.g/9.81).toFixed(2)+' g'}}
-function fin(){var k=key(),R0=rec(),t=st.t0,fast=!R0.fast||t<R0.fast;if(fast)R0.fast=t;R0.stars=3;R0.jump=Math.max(R0.jump||0,st.maxJ||0);
+function fin(){var k=key(),R0=rec(),t=st.t0,fast=!R0.fast||t<R0.fast;if(fast)R0.fast=t;R0.stars=st.mis.length;R0.tot=st.mis.length;if(cur.n==='Venus')unlock('venus');R0.jump=Math.max(R0.jump||0,st.maxJ||0);
  var dl=daily(),isD=k==='ex:'+dl.n,td=today();if(isD&&SV.daily.last!==td){var y=new Date(Date.now()-864e5).toISOString().slice(0,10);SV.daily.streak=SV.daily.last===y?(SV.daily.streak||0)+1:1;SV.daily.last=td;if(SV.daily.streak>=3)unlock('daily')}
  save();var n=nDone();if(n>=3)unlock('s3');if(n>=10)unlock('s10');if(st.minHp<10)unlock('close');grab();
  var ft=t<60?t.toFixed(0)+' s':Math.floor(t/60)+' min '+Math.round(t%60)+' s';
- RES={dead:false,tag:'Survey complete',big:'I surveyed '+cur.n+' in '+ft,sub:Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g · '+fly(cur.src&&cur.src.ly||0).replace(/^0 ly$/,'Solar System')};
- var x=D.createElement('div');x.className='rc';x.innerHTML='OBJECTIVES 3/3 · TIME <b>'+ft+'</b>'+(fast?' · NEW BEST':' · BEST '+Math.round(R0.fast)+' S')+(isD?'<br>PLANET OF THE DAY · STREAK <b>'+SV.daily.streak+' D</b>':'');$x('dnB').appendChild(x);
+ RES={dead:false,tag:'Field survey complete',big:'I surveyed '+cur.n+' in '+ft,sub:Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g · '+fly(cur.src&&cur.src.ly||0).replace(/^0 ly$/,'Solar System')};
+ var x=D.createElement('div');x.className='rc';var LB={grav:'Gravity',temp:'Temperature',pres:'Pressure',air:'Atmosphere',rad:'Radiation',sample:'Sample',scan:'Life',drop:'Apollo 15'};x.innerHTML='FIELD REPORT<br>'+st.mis.map(function(m){return (LB[m.ty]||m.t).toUpperCase()+': <b>'+(m.d||'done')+'</b>'}).join('<br>')+'<br><br>TIME <b>'+ft+'</b>'+(fast?' · NEW BEST':' · BEST '+Math.round(R0.fast)+' S')+(isD?'<br>PLANET OF THE DAY · STREAK <b>'+SV.daily.streak+' D</b>':'');$x('dnB').appendChild(x);
  var sb=D.createElement('button');sb.className='btn shr';sb.style.cssText='width:100%;margin-top:6px';sb.textContent='Share result';sb.onclick=share;$x('dnB').appendChild(sb)}
 setTimeout(function(){menuHook()},0);
-window.WWxt=function(){return{GL:GL,spec:specOf,fin:fin,ach:achList,card:card,lf:function(){return LF&&{n:LF.ents.length,cl:LF.cl,kinds:LF.ents.reduce(function(o,e){o[e.k]=(o[e.k]||0)+1;return o},{}),g:LF.ents.filter(function(e){return e.k==='graze'}).map(function(e){return[e.g.position.x,e.g.position.z]})}},tp:function(x,z,yaw){Y.x=x;Y.z=z;Y.y=H(x,z)+.5;Y.vy=0;if(yaw!==undefined)Y.yaw=yaw}}};window.WWdbg=function(){return{pr:R.getPixelRatio(),fp:FP.count,wm:wat.material.type+' '+!!wat.material.map+' vis'+wat.visible+' wl'+cur.wl,x:Y.x,y:Y.y,z:Y.z,on:Y.on,paused:paused,intro:Y.intro,hp:Y.hp,keys:JSON.stringify(keys),menu:$x('menu').className,cur:cur&&cur.n,st:{t0:st.t0,maxJ:st.maxJ}}};
+window.WWxt=function(){return{GL:GL,spec:specOf,fin:fin,ach:achList,card:card,lf:function(){return LF&&{n:LF.ents.length,cl:LF.cl,kinds:LF.ents.reduce(function(o,e){o[e.k]=(o[e.k]||0)+1;return o},{}),g:LF.ents.filter(function(e){return e.k==='graze'}).map(function(e){return[e.g.position.x,e.g.position.z]})}},mis:function(){return st.mis.map(function(m){return{ty:m.ty,ok:m.ok,x:m.x,z:m.z,d:m.d}})},ld:function(){return[lander.position.x,lander.position.z]},tp:function(x,z,yaw){Y.x=x;Y.z=z;Y.y=H(x,z)+.5;Y.vy=0;if(yaw!==undefined)Y.yaw=yaw}}};window.WWdbg=function(){return{pr:R.getPixelRatio(),fp:FP.count,wm:wat.material.type+' '+!!wat.material.map+' vis'+wat.visible+' wl'+cur.wl,x:Y.x,y:Y.y,z:Y.z,on:Y.on,paused:paused,intro:Y.intro,hp:Y.hp,keys:JSON.stringify(keys),menu:$x('menu').className,cur:cur&&cur.n,st:{t0:st.t0,maxJ:st.maxJ}}};
 function ms(){var m=$x('ms');if(!m)return;var first=m.querySelector('.mi:not(.ok)');if(first)first.classList.add('cur')}
-return{life:lifeOf,scan:scan,isDaily:function(d){return !!d&&d.n===daily().n},descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
+return{plan:plan,tool:tool,jumped:jumped,dropG:dropG,geo:geo,rows:rows,life:lifeOf,scan:scan,isDaily:function(d){return !!d&&d.n===daily().n},descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
 /*END XT*/
 return{worldOk:worldOk,pause:pause,trial:trial,gate:gate,hasPass:hasPass,buyPass:buyPass,locked:locked,price:price,ads:AD,pick:pick,exOk:exOk,refresh:refresh,onLoad:onLoad,tick:tick,cam:camFx,spd:spd,vacc:vacc,satDesc:satDesc,quiet:quiet,get paused(){return paused},range:range,_st:st,_land:lander}})();
 /* ---------- deep link: ?planet=<slug> (used by the website's planet pages) ---------- */
