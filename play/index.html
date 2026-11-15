@@ -4,7 +4,6 @@
 <link rel="canonical" href="https://exolander.space/play/">
 <meta name="description" content="Play Exolander free in your browser: land on real planets and survive their gravity, heat and air.">
 <link rel="icon" href="../assets/icon-192.png">
-<meta name="google-adsense-account" content="ca-pub-2366707334842855">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Exolander</title>
@@ -93,7 +92,7 @@ h1{margin:0;font-size:38px;letter-spacing:-.5px}
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="hud"><b id="pn"></b><div id="rows"></div><div class="bl"><span>Suit</span><div id="bar"><i id="fill"></i></div></div><div class="bl"><span>O₂</span><div class="bar"><i id="o2f"></i></div></div><button class="btn sm" id="o2ad">▶ Watch ad: +2 min O₂</button><div class="bl" id="jetr"><span>Jet</span><div class="bar"><i id="jetf"></i></div></div><div id="warn"></div></div>
+<div id="hud"><b id="pn"></b><div id="rows"></div><div class="bl"><span>Suit</span><div id="bar"><i id="fill"></i></div></div><div class="bl"><span>O₂</span><div class="bar"><i id="o2f"></i></div></div><button class="btn sm" id="o2ad">▶ +2 min O₂</button><div class="bl" id="jetr"><span>Jet</span><div class="bar"><i id="jetf"></i></div></div><div id="warn"></div></div>
 <button class="btn" id="wl">Worlds</button>
 <button class="btn" id="lm">Info</button>
 <div id="toast"></div>
@@ -116,7 +115,7 @@ h1{margin:0;font-size:38px;letter-spacing:-.5px}
 <p id="prog"></p>
 <button class="btn alt" id="privb" hidden>Privacy settings</button>
 <button class="btn alt" id="restb" hidden>Restore purchases</button>
-<button class="btn alt" id="noads">Remove ad breaks</button>
+<button class="btn alt" id="noads">Explorer Pass</button>
 <p id="hint">WASD + mouse, Space to jump, Shift to sprint. E drop hammer and feather, F throw a rock, X use (beacon or sample), C compare, M sound. Complete a world's survey and return to your lander to unlock more worlds. On touch: left thumb moves, drag the right side to look.<br>Earth, Moon and Mars globes use NASA maps (Blue Marble, lunar and Viking Mars mosaics).</p>
 </div>
 <div id="exm" class="hide"><div id="exh"><b>Exoplanets</b><button class="btn" id="exx">Close</button></div><input id="exq" type="search" placeholder="Search by name, e.g. Proxima, TRAPPIST or Kepler" autocomplete="off"><div id="exf"></div><div id="exl"></div><small id="exn"></small></div>
@@ -572,8 +571,8 @@ a.slice(0,n).forEach(function(v){var ok=GM.exOk(v),b=document.createElement('but
 b.className='btn'+(ok?'':' lock');b.innerHTML='<span>'+(ok?'':'🔒 ')+v.n+'</span><small>'+lbl+(ok?'':' · '+tease(v))+'<br>'+v.g+' m/s², '+T+' °C, '+(v.ly>=1e8?'? ly':fly(v.ly))+'</small>';
 b.onclick=function(){var d=feat?v:cWorld(v.e);document.getElementById('exm').classList.add('hide');if(!GM.exOk(d)){GM.locked(d,function(){setEx(d)});return}GM.gate(function(){setEx(d)})};L2.appendChild(b)});
 if(n<a.length){var m=document.createElement('button');m.className='btn more';m.textContent='Show more ('+(a.length-n).toLocaleString('en-US')+' left)';m.onclick=function(){EXPG++;var y=L2.scrollTop;exList(true);L2.scrollTop=y};L2.appendChild(m)}
-var un=0;if(!feat){if(GM.hasPass())un=ALL.length;else{var rg=GM.range();allV().forEach(function(v){if(FEAT[v.n]&&v.ly<=rg)un++})}}
-document.getElementById('exn').textContent=feat?'Showing '+a.length+' of '+CUR.length+' hand-picked worlds with their own facts and looks.':'Showing '+n.toLocaleString('en-US')+' of '+a.length.toLocaleString('en-US')+' matches · '+un.toLocaleString('en-US')+' of '+ALL.length.toLocaleString('en-US')+' planets unlocked'+(GM.hasPass()?'':' (featured worlds unlock as you survey; the full catalog needs the Explorer Pass)')+'. Real data from the NASA Exoplanet Archive; surfaces are generated from it.'}
+var un=0;if(!feat){if(GM.hasPass())un=ALL.length}
+document.getElementById('exn').textContent=feat?'Showing '+a.length+' of '+CUR.length+' hand-picked worlds with their own facts and looks.':'Showing '+n.toLocaleString('en-US')+' of '+a.length.toLocaleString('en-US')+' matches · '+un.toLocaleString('en-US')+' of '+ALL.length.toLocaleString('en-US')+' planets unlocked'+(GM.hasPass()?'':' (exoplanets need the Explorer Pass; the planet of the day is free)')+'. Real data from the NASA Exoplanet Archive; surfaces are generated from it.'}
 function exFilters(){var f=document.getElementById('exf');f.innerHTML='';var tb=document.createElement('div');tb.className='tabs';
 [['feat','Featured ('+CUR.length+')'],['all','All '+ALL.length.toLocaleString('en-US')]].forEach(function(t){var b=document.createElement('button');b.className='btn tab'+(EXT===t[0]?' on':'');b.textContent=t[1];b.onclick=function(){if(EXT===t[0])return;EXT=t[0];EXF='all';exFilters();exList()};tb.appendChild(b)});f.appendChild(tb);
 (EXT==='feat'?CATS:CATS2).forEach(function(a){var b=document.createElement('button');b.className='btn'+(a[0]===EXF?' on':'');b.textContent=a[1];b.onclick=function(){EXF=a[0];[].forEach.call(f.querySelectorAll('button:not(.tab)'),function(x){x.classList.remove('on')});b.classList.add('on');exList()};f.appendChild(b)});
@@ -589,25 +588,24 @@ var SV={done:{},sand:0};try{var s0=JSON.parse(localStorage.getItem('ww-progress'
 var DEV=!(window.WWnative||window.WWsite);if(!DEV)SV.sand=0;
 function save(){try{localStorage.setItem('ww-progress',JSON.stringify(SV))}catch(e){}}
 function nDone(){return Object.keys(SV.done).length}
-var REQ={mercury:1,moon:0,mars:0,earth:0,venus:1,titan:1};
+var REQ={mercury:0,moon:0,mars:0,earth:0,venus:0,titan:0};
 function range(){var n=nDone();return SV.sand?1e9:n<3?-1:n>=11?1e9:15*Math.pow(2,n-3)}
 function worldOk(k){return SV.sand||nDone()>=(REQ[k]||0)}
 function hasPass(){return !!(SV.pass||SV.sand)}
 function isFeat(d){return typeof FEAT!=='undefined'&&!!FEAT[d.n]}
-function exOk(d){if(hasPass())return true;return isFeat(d)?d.ly<=range():false}
+function exOk(d){if(hasPass())return true;return typeof XT!=='undefined'&&XT.isDaily(d)}
 function price(){return(window.WWStore&&WWStore.price)||'$3.99'}
 function nAll(){return ALL.length.toLocaleString('en-US')}
-var PASS_TXT='Unlock '+nAll()+' real exoplanets from the NASA archive: every confirmed world small enough to walk on, from lava planets to frozen worlds 25,000 light-years away. One-time purchase, and it also removes ad breaks.';
-function grantPass(){var first=!SV.pass;SV.pass=1;save();refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList();if(first)showT('Explorer Pass unlocked','All '+nAll()+' exoplanets are open and ad breaks are gone. Thank you for supporting Exolander!')}
+var PASS_TXT='Unlock '+nAll()+' real exoplanets from the NASA archive: every confirmed world small enough to walk on, from lava planets to frozen worlds 25,000 light-years away. One-time purchase. It also gives you a 4th suit slot, a revive on every landing, extra oxygen when you run low, and lander paints.';
+function grantPass(){var first=!SV.pass;SV.pass=1;save();refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList();if(first)showT('Explorer Pass unlocked','All '+nAll()+' exoplanets are open and your suit perks are on. Thank you for supporting Exolander!')}
 window.WWgrantPass=grantPass;window.WWrefresh=function(){refresh();if(typeof exInit!=='undefined'&&exInit&&!$('exm').classList.contains('hide'))exList()};
-function buyPass(after){if(hasPass()&&SV.pass){showT('You have the Explorer Pass','All '+nAll()+' exoplanets are unlocked.');return}
-if(!window.WWStore&&(window.WWnative||window.WWsite)){showT('Explorer Pass','Coming soon. Meanwhile, watch a short ad to try any planet once.');return}
-if(window.WWStore){pause(true);WWStore.buy(function(ok,err){pause(false);if(ok){grantPass();after&&after()}else if(err==='notready')showT('Store not ready','Could not reach the store. Check your connection and try again.');else if(err==='error')showT('Purchase failed','Nothing was charged. Please try again later.')});return}
-offer('Explorer Pass',PASS_TXT+' In the app this is a real Google Play / App Store purchase.','Simulate purchase ('+price()+')',function(){grantPass();after&&after()},'Cancel',function(){})}
-function locked(d,cb){if(!window.WWStore&&(window.WWnative||window.WWsite)){trial(d.n,cb);return}if(isFeat(d)){offer('Locked: '+d.n,'This featured world is '+fly(d.ly)+' away. Keep surveying to extend your range, watch a short ad to try it once, or get the Explorer Pass to unlock every world.','▶ Watch ad: try it',function(){Ads.rewarded('one trial landing on '+d.n,function(ok){if(ok)cb()})},'Not now',function(){},'Explorer Pass · '+price(),function(){buyPass()});return}
-offer('Explorer Pass',PASS_TXT,'Get it · '+price(),function(){buyPass(cb)},'Not now',function(){},'▶ Watch ad: try '+d.n+' once',function(){Ads.rewarded('one trial landing on '+d.n,function(ok){if(ok)cb()})})}
+function buyPass(after,cancel){if(hasPass()&&SV.pass){showT('You have the Explorer Pass','All '+nAll()+' exoplanets are unlocked.');return}
+if(!window.WWStore&&(window.WWnative||window.WWsite)){showT('Explorer Pass','Coming soon.');cancel&&cancel();return}
+if(window.WWStore){pause(true);WWStore.buy(function(ok,err){pause(false);if(ok){grantPass();after&&after()}else{if(err==='notready')showT('Store not ready','Could not reach the store. Check your connection and try again.');else if(err==='error')showT('Purchase failed','Nothing was charged. Please try again later.');cancel&&cancel()}});return}
+offer('Explorer Pass',PASS_TXT+' In the app this is a real Google Play / App Store purchase.','Simulate purchase ('+price()+')',function(){grantPass();after&&after()},'Cancel',function(){cancel&&cancel()})}
+function locked(d,cb){offer('Explorer Pass',d.n+' is part of the full catalog. '+PASS_TXT,'Get it · '+price(),function(){buyPass(cb)},'Not now',function(){})}
 function refresh(){var n=nDone();[].forEach.call($('list').children,function(b){var k=b.dataset.k;if(!k)return;var ok=worldOk(k),sm=b.querySelector('small');b.classList.toggle('lock',!ok);sm.textContent=ok?(SV.done[k]?'✓ surveyed · ':'')+P[k].g+' m/s² · '+P[k].t+' °C':'🔒 complete '+REQ[k]+' survey'+(REQ[k]>1?'s':'')});
-var eb=[].filter.call($('list').children,function(b){return b.classList.contains('alt')})[0];if(eb){var r=range();eb.classList.toggle('lock',r<0);eb.textContent='Explore '+ALL.length.toLocaleString('en-US')+' exoplanets'+(hasPass()?'':r<0?' (3 surveys unlock the first)':'')}
+var eb=[].filter.call($('list').children,function(b){return b.classList.contains('alt')})[0];if(eb){var r=range();eb.classList.remove('lock');eb.textContent='Explore '+ALL.length.toLocaleString('en-US')+' exoplanets'+(hasPass()?'':' (Explorer Pass)')}
 $('prog').innerHTML='Surveys completed: <b>'+n+'</b>'+(SV.sand?' · sandbox on':'')+' · Graphics <select id="qsel" aria-label="Graphics quality"><option value="low">Low</option><option value="med">Medium</option><option value="high">High</option></select>'+(DEV?' · <label><input type="checkbox" id="sandc"'+(SV.sand?' checked':'')+'> Sandbox: unlock everything</label>':'');
 $('noads').style.display=(window.WWnative||window.WWsite)&&!window.WWStore?'none':'';$('restb').hidden=!(window.WWStore&&!SV.pass);$('privb').hidden=!window.WWprivacy;$('privb').onclick=function(){window.WWprivacy&&WWprivacy()};$('qsel').value=WT.q;$('qsel').onchange=function(){try{localStorage.setItem('ww-q',this.value)}catch(e){}location.reload()};$('noads').textContent=SV.pass?'✓ Explorer Pass: all worlds unlocked':'Explorer Pass: unlock all '+nAll()+' planets · '+price();if($('sandc'))$('sandc').onchange=function(){SV.sand=this.checked?1:0;save();refresh();if(typeof exList==='function'&&exInit)exList()};if(typeof XT!=='undefined')XT.menu()}
 
@@ -615,15 +613,14 @@ $('noads').style.display=(window.WWnative||window.WWsite)&&!window.WWStore?'none
    Placeholders shaped like AdMob. In the Capacitor app, replace showAd() calls with:
    rewarded -> AdMob.prepareRewardVideoAd + showRewardVideoAd (grant reward only on the reward event)
    interstitial -> AdMob.prepareInterstitial + showInterstitial
-   'Remove ad breaks' -> a one-time in-app purchase; it disables interstitials, rewarded ads stay (players choose them). */
+   'Explorer Pass' -> a one-time in-app purchase; it disables interstitials, rewarded ads stay (players choose them). */
 var AD={lastI:Date.now(),land:0,stats:{rew:0,int:0}};
 function showAd(t,m,n,cb){var o=$('adv');$('adT').textContent=t;o.classList.remove('hide');var k=n;$('adM').textContent=m+' ('+k+')';var iv=setInterval(function(){k--;if(k>0)$('adM').textContent=m+' ('+k+')';else{clearInterval(iv);o.classList.add('hide');cb()}},1000)}
-var Ads={rewarded:function(why,cb){AD.stats.rew++;if(window.WWAds){WWAds.rewarded(function(ok,err){if(!ok&&err)showT('No reward this time',err==='notready'?'An ad is still loading. Try again in a moment.':'The ad was closed before the end.');cb(!!ok)});return}showAd('Rewarded ad','A real video ad plays here. Reward: '+why+'.',3,function(){cb(true)})},
-interstitial:function(cb){var now=Date.now();if(SV.noads||SV.pass||AD.land<3||now-AD.lastI<180000){cb();return}AD.lastI=now;AD.stats.int++;if(window.WWAds){WWAds.interstitial(cb);return}showAd('Ad break','A real interstitial plays here.',2,cb)}};
+var Ads={rewarded:function(why,cb){if(hasPass()){cb(true);return}buyPass(function(){cb(true)},function(){cb(false)})},interstitial:function(cb){cb()}};
 function offer(t,m,yes,onY,no,onN,alt,onA){$('ofT').textContent=t;$('ofM').textContent=m;$('ofY').textContent=yes;$('ofN').textContent=no;$('ofZ').hidden=!alt;if(alt){$('ofZ').textContent=alt;$('ofZ').onclick=function(){$('offer').classList.add('hide');onA()}}$('offer').classList.remove('hide');
 $('ofY').onclick=function(){$('offer').classList.add('hide');onY()};$('ofN').onclick=function(){$('offer').classList.add('hide');onN()}}
 function gate(cb){Ads.interstitial(cb)}
-function trial(name,cb){offer('Locked: '+name,'Keep surveying to unlock it for good, or watch a short ad to try it for one landing.','▶ Watch ad: try it',function(){Ads.rewarded('one trial landing on '+name,function(ok){if(ok)cb()})},'Not now',function(){})}
+function trial(name,cb){cb()}
 $('noads').onclick=function(){buyPass()};
 $('restb').onclick=function(){if(!window.WWStore)return;showT('Restoring purchases','Checking your store account…');WWStore.restore(function(){setTimeout(function(){if(!SV.pass)showT('Nothing to restore','No Explorer Pass was found on this store account.')},2500)})};
 function pick(k){if(!worldOk(k)){trial(P[k].n,function(){load(k)});return}gate(function(){load(k)})}
@@ -648,7 +645,7 @@ $('loM').innerHTML=MODS.map(function(m){return'<button class="mod'+(M[m[0]]?' on
 var c=cur.sat?{T:Y.st,P:Y.sp}:{T:cur.t,P:cur.p},rl=['none','moderate','high'][cur.rad||0];
 $('loC').innerHTML='<span>Temperature <b>'+Math.round(c.T)+' °C</b></span><span>Air pressure <b>'+pp(c.P)+'</b></span><span>Gravity <b>'+gx(cur.g)+'</b></span><span>Radiation <b>'+rl+'</b></span><span>Air <b>'+(cur.br?'breathable':'not breathable')+'</b></span>'+(cur.sat?'<span class="wide">Gas giant: it gets hotter and crushing as you sink.</span>':cur.ts&&cur.ts.a==='lava'?'<span class="wide">Lava nearby is far hotter than the ground.</span>':'');
 var col=e.t>=180?'#7bd88f':e.t>=60?'#ffd166':'#ff6b5e';$('loE').innerHTML='Modules: '+n+'/'+st.slots+' · Estimated time at the landing site: <b style="color:'+col+'">'+fmtT(e.t)+'</b>'+(e.why?' (limited by '+e.why+')':'')}
-function loadout(){$('lo4').disabled=false;$('lo4').textContent='▶ Ad: 4th slot';M=recommend();var sv=SV.last&&SV.last[cur.n];$('loT').textContent='Suit loadout: '+cur.n;loRender();$('lo').classList.remove('hide');pause(true);XT.lo()}
+function loadout(){if(hasPass())st.slots=4;$('lo4').disabled=hasPass();$('lo4').textContent=hasPass()?'✓ 4 slots (Pass)':'4th slot · Explorer Pass';M=recommend();var sv=SV.last&&SV.last[cur.n];$('loT').textContent='Suit loadout: '+cur.n;loRender();$('lo').classList.remove('hide');pause(true);XT.lo()}
 $('loR').onclick=function(){M=recommend();loRender()};
 $('lo4').onclick=function(){if(st.slots>3)return;Ads.rewarded('a 4th suit module slot for this landing',function(ok){if(ok){st.slots=4;$('lo4').disabled=true;$('lo4').textContent='4 slots unlocked';loRender()}})};
 $('resume').onclick=function(){$('menu').classList.add('hide')};
@@ -696,7 +693,7 @@ $('ms').innerHTML='<b>Survey'+(st.done?' complete ✓':SV.done[st.key]?' (survey
 function hap(k){if(window.WWhaptic)return WWhaptic(k);if(TOUCH&&navigator.vibrate)try{navigator.vibrate(k==='heavy'?60:25)}catch(e){}}
 function complete(m,msg){if(m.ok)return;m.ok=true;XT.obj(m);hap('success');MK.forEach(function(k){if(k.ms===m){k.b.visible=k.r.visible=false}});renderMis();au.chime();showT('Objective complete',m.t+(msg?'. '+msg:''));if(cur.sat&&st.mis.every(function(x){return x.ok}))finish()}
 function finish(){if(st.done)return;st.done=true;var before=snapshot();SV.done[st.key]=1;save();var after=snapshot(),nw=after.filter(function(x){return before.indexOf(x)<0});renderMis();refresh();
-$('dnT').textContent='Survey complete: '+cur.n;$('dnB').innerHTML='<p>All objectives done'+(cur.sat?'.':' and you made it back to the lander.')+' Surveys completed: <b>'+nDone()+'</b>.</p>'+(nw.length?'<p><b>Newly unlocked:</b> '+nw.slice(0,12).join(', ')+(nw.length>12?' and '+(nw.length-12)+' more':'')+'</p>':'<p>Keep surveying to unlock more distant worlds.</p>');$('done').classList.remove('hide');pause(true);au.chime();XT.fin()}
+$('dnT').textContent='Survey complete: '+cur.n;$('dnB').innerHTML='<p>All objectives done'+(cur.sat?'.':' and you made it back to the lander.')+' Surveys completed: <b>'+nDone()+'</b>.</p>'+(nw.length?'<p><b>Newly unlocked:</b> '+nw.slice(0,12).join(', ')+(nw.length>12?' and '+(nw.length-12)+' more':'')+'</p>':'<p>'+(hasPass()?'Pick another world to explore.':'Open all '+nAll()+' exoplanets with the Explorer Pass.')+'</p>');$('done').classList.remove('hide');pause(true);au.chime();XT.fin()}
 function snapshot(){var o=[];Object.keys(REQ).forEach(function(k){if(worldOk(k))o.push(P[k].n)});CUR.forEach(function(d){if(exOk(d))o.push(d.n)});return o}
 $('dnX').onclick=function(){$('done').classList.add('hide');Ads.interstitial(function(){pause(false)})};
 /* ---------- throwables ---------- */
@@ -737,7 +734,7 @@ Y.hp=Math.max(0,Math.min(100,Y.hp+(r>0?-r:nearL?6:.4)*dt));Y.cause=top?top[0]:''
 hud.fill.style.width=Y.hp+'%';hud.fill.style.background=Y.hp>50?'#7bd88f':Y.hp>25?'#ffd166':'#ff6b5e';$('o2f').style.width=st.o2+'%';$('o2ad').style.display=!cur.br&&!cur.sat&&!nearL&&!st.o2Used&&st.o2<25&&!Y.intro?'block':'none';$('o2f').style.background=st.o2>30?'#7ac7ff':'#ff6b5e';$('jetf').style.width=(st.jet/6*100)+'%';
 var w=r>=.05?'Suit failing: '+top[0].toLowerCase()+' ('+Math.round(Y.hp)+'%)':r>0&&!Y.intro?'Low '+top[0].toLowerCase()+' exposure: slow suit wear':Y.intro?'Descending, Jump to skip: '+Math.round(Y.y-H(Y.x,Y.z))+' m up, '+Math.abs(Y.vy).toFixed(1)+' m/s':nearL?'At the lander: refilling and repairing':cur.br?'Breathing local air':st.o2<30?'Oxygen low: head back to the lander':'Suit air in use';hud.warn.textContent=w;
 beepT-=dt;if((Y.hp<25||st.o2<20)&&beepT<=0&&!Y.intro){au.beep(1200,.08);beepT=1.2}
-if(Y.hp<=0){hap('heavy');var cz=top?top[0]:'Suit damage',why=cz+' on '+cur.n+'. Try a different suit loadout: pick a world to try again.';pause(true);XT.died(cz);if(!st.revUsed){st.revUsed=true;offer('Suit failed: '+cz.toLowerCase(),'Watch a short ad to be pulled back to '+(cur.sat?'safer altitude':'your lander')+' with half your suit and fresh oxygen.','▶ Watch ad: revive',function(){Ads.rewarded('revive',function(ok){if(!ok){pause(false);Y.hp=0;menu('Suit failed',why);return}Y.hp=50;st.o2=Math.max(st.o2,70);if(cur.sat){Y.y+=18}else{Y.x=lander.position.x+3;Y.z=lander.position.z+3;Y.y=H(Y.x,Y.z)+.5;Y.vy=0}pause(false)})},'Give up',function(){Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})})}else{Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})}Y.hp=Math.max(Y.hp,.01);return}
+if(Y.hp<=0){hap('heavy');var cz=top?top[0]:'Suit damage',why=cz+' on '+cur.n+'. Try a different suit loadout: pick a world to try again.';pause(true);XT.died(cz);if(!st.revUsed){st.revUsed=true;offer('Suit failed: '+cz.toLowerCase(),(hasPass()?'Explorer Pass: get':'With the Explorer Pass you get')+' pulled back to '+(cur.sat?'safer altitude':'your lander')+' with half your suit and fresh oxygen, once per landing.',hasPass()?'Revive':'Revive · Explorer Pass',function(){Ads.rewarded('revive',function(ok){if(!ok){pause(false);Y.hp=0;menu('Suit failed',why);return}Y.hp=50;st.o2=Math.max(st.o2,70);if(cur.sat){Y.y+=18}else{Y.x=lander.position.x+3;Y.z=lander.position.z+3;Y.y=H(Y.x,Y.z)+.5;Y.vy=0}pause(false)})},'Give up',function(){Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})})}else{Ads.interstitial(function(){pause(false);Y.hp=0;menu('Suit failed',why)})}Y.hp=Math.max(Y.hp,.01);return}
 /* jump tracking */
 if(!cur.sat){if(Y.on&&!st.onPrev){au.thud(80,rho(),1);XT.shake(.25);var jh=st.peak-st.gy;if(jh>st.maxJ)st.maxJ=jh;st.mis.forEach(function(m){if(m.ty==='jump'&&!m.ok&&jh>=m.val)complete(m,'You jumped '+jh.toFixed(1)+' m')})}if(Y.on){st.gy=Y.y;st.peak=Y.y}else st.peak=Math.max(st.peak,Y.y);st.onPrev=Y.on}
 /* objectives */
@@ -1090,7 +1087,7 @@ function menuHook(){var L=$x('list');if(!L)return;var h=$x('hero');if(!h){h=D.cr
  if(!SV.lands)s+='<button class="btn big" id="hPlay">▶ Play now<small>Land on the Moon · no setup needed</small></button>';
  else{var dl=daily(),dk='ex:'+dl.n,dn=SV.daily.last===today();s+='<button class="card" id="hDay">🌍 Planet of the day: <b>'+dl.n+'</b> '+stars(dk)+'<small>'+(dn?'Done today ✓ · ':'Free to play today · complete its survey · ')+'streak '+(SV.daily.streak||0)+' 🔥</small></button>'}
  var na=Object.keys(SV.ach).length;s+='<div class="row"><button class="btn alt2" id="hAch">🏆 Achievements '+na+'/'+ACH.length+'</button></div>';
- if(SV.lands>=3&&!hasPass()&&(window.WWStore||!(window.WWnative||window.WWsite)))s+='<button class="card pass" id="hPass">✨ Enjoying Exolander? <b>Explorer Pass</b><small>All '+nAll()+' exoplanets, no ad breaks, lander paints · '+price()+' once</small></button>';
+ if(SV.lands>=3&&!hasPass()&&(window.WWStore||!(window.WWnative||window.WWsite)))s+='<button class="card pass" id="hPass">✨ Enjoying Exolander? <b>Explorer Pass</b><small>All '+nAll()+' exoplanets, 4 suit slots, revives, lander paints · '+price()+' once</small></button>';
  if(hasPass())s+='<div class="paint">Lander paint: '+PAINT.map(function(p){return'<i data-p="'+p[0]+'" style="background:#'+p[1].toString(16).padStart(6,'0')+'"'+((SV.paint||'gold')===p[0]?' class="on"':'')+'></i>'}).join('')+'</div>';
  h.innerHTML=s;
  var b;if(b=$x('hShr'))b.onclick=share;if(b=$x('hPlay'))b.onclick=function(){quick=true;pick('moon')};
@@ -1101,7 +1098,7 @@ function paint(){var p=PAINT.filter(function(x){return x[0]===(hasPass()&&SV.pai
 
 /* ---------- hooks called by the game ---------- */
 function landed(){SV.lands++;var n=cur.n;SV.seen[n]=1;save();RES=null;visorOff();crk=-1;cracks(0);FP.forEach(function(m){sc.remove(m)});FP=[];for(var i=0;i<DN;i++){dL[i]=0;dP[i*3+1]=-1e5}
- var pc=cur.ts&&WT.PAL[cur.ts.p]?WT.PAL[cur.ts.p][0]:'#9a8a78';dM.color.set(pc).lerp(new THREE.Color(0xaaaaaa),.25);GL.set(specOf(cur));$x('hs').textContent=Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g';paint();st.dist=0;st.px=Y.x;st.pz=Y.z;st.minHp=100;
+ var pc=cur.ts&&WT.PAL[cur.ts.p]?WT.PAL[cur.ts.p][0]:'#9a8a78';dM.color.set(pc).lerp(new THREE.Color(0xaaaaaa),.25);GL.set(specOf(cur));$x('hs').textContent=Math.round(cur.t)+' °C · '+(cur.g/9.81).toFixed(2)+' g';paint();$x('o2ad').textContent=hasPass()?'+2 min O₂':'+2 min O₂ · Explorer Pass';st.dist=0;st.px=Y.x;st.pz=Y.z;st.minHp=100;
  volcanic(!!(cur.ts&&cur.ts.a==='lava'));
  unlock('first');if(Object.keys(SV.seen).length>=5)unlock('w5');var s=cur.src;
  if(s){if(s.a==='lava')unlock('lava');if(s.a==='ocean')unlock('ocean');if(s.ly>1000)unlock('far');if(s.t>=180&&s.t<=320&&s.r<2.5){SV.hzs=SV.hzs||{};SV.hzs[n]=1;save();if(Object.keys(SV.hzs).length>=3)unlock('hz')}}
@@ -1124,7 +1121,7 @@ function fin(){var k=key(),R0=rec(),t=st.t0,fast=!R0.fast||t<R0.fast;if(fast)R0.
 setTimeout(function(){menuHook()},0);
 window.WWxt=function(){return{GL:GL,spec:specOf,fin:fin,ach:achList,card:card}};window.WWdbg=function(){return{wm:wat.material.type+' '+!!wat.material.map+' vis'+wat.visible+' wl'+cur.wl,x:Y.x,y:Y.y,z:Y.z,on:Y.on,paused:paused,intro:Y.intro,hp:Y.hp,keys:JSON.stringify(keys),menu:$x('menu').className,cur:cur&&cur.n,st:{t0:st.t0,maxJ:st.maxJ}}};
 function ms(){var m=$x('ms');if(!m)return;var first=m.querySelector('.mi:not(.ok)');if(first)first.classList.add('cur')}
-return{descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
+return{isDaily:function(d){return !!d&&d.n===daily().n},descend:descend,lo:lo,landed:landed,tick:tick,obj:obj,died:died,fin:fin,ms:ms,menu:menuHook,step:step,cam:camHook,shake:shake,share:share,spec:specOf,GL:GL}})();
 /*END XT*/
 return{worldOk:worldOk,pause:pause,trial:trial,gate:gate,hasPass:hasPass,buyPass:buyPass,locked:locked,price:price,ads:AD,pick:pick,exOk:exOk,refresh:refresh,onLoad:onLoad,tick:tick,cam:camFx,spd:spd,vacc:vacc,satDesc:satDesc,quiet:quiet,get paused(){return paused},range:range,_st:st,_land:lander}})();
 /* ---------- deep link: ?planet=<slug> (used by the website's planet pages) ---------- */

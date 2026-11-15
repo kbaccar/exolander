@@ -40,7 +40,7 @@
     var price = S.price || '';
     el.innerHTML = '<div class="bx" role="dialog" aria-modal="true" aria-labelledby="wwpt">' +
       (mode === 'buy'
-        ? '<h2 id="wwpt">Explorer Pass</h2><p>Unlock every walkable exoplanet in the NASA archive and remove ad breaks. One-time purchase, no subscription.</p>' +
+        ? '<h2 id="wwpt">Explorer Pass</h2><p>Unlock every walkable exoplanet in the NASA archive, plus a 4th suit slot, a revive on every landing, extra oxygen and lander paints. One-time purchase, no subscription.</p>' +
           (price ? '<div class="pr">' + price + '</div>' : '') +
           '<a class="buy" href="' + S.checkoutUrl + '" target="_blank" rel="noopener">Buy on Gumroad</a>' +
           '<p style="font-size:13px">Secure checkout by Gumroad. You get a license key by email and on the receipt page. Come back here and paste it below.</p><hr>'
